@@ -107,6 +107,7 @@ target_include_directories(libuSignal
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
 target_link_libraries(libuSignal
+                      PUBLIC OpenMP::OpenMP_CXX
                       PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers Threads::Threads)
 set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
@@ -132,8 +133,9 @@ set_target_properties(coreTests PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
                       CXX_EXTENSIONS NO)
-target_link_libraries(coreTests PRIVATE
-                      uSignal::libuSignal Threads::Threads OpenMP::OpenMP_CXX Catch2::Catch2 Catch2::Catch2WithMain)
+target_link_libraries(coreTests
+                      PUBLIC OpenMP::OpenMP_CXX
+                      PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
 target_include_directories(coreTests
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
