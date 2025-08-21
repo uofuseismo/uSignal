@@ -106,7 +106,7 @@ target_include_directories(libuSignal
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
 target_link_libraries(libuSignal
-                      PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers)
+                      PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers Threads::Threads)
 set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
