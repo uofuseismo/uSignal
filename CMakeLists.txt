@@ -14,6 +14,7 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Catch2 3 REQUIRED)
 find_package(IPP)
+find_package(Boost COMPONENTS headers REQUIRED)
 #find_package(FindIPP REQUIRED)
 #set(MKL_INTERFACE lp64)
 #set(MKL_LINK intel64)
@@ -105,7 +106,7 @@ target_include_directories(libuSignal
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
 target_link_libraries(libuSignal
-                      PRIVATE MKL::MKL ${IPP_LIBRARIES})
+                      PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers)
 set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
