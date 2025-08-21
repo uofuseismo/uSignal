@@ -2,6 +2,7 @@
 #include <algorithm>
 #ifndef NDEBUG
 #include <cassert>
+#include <limits>
 #endif
 #include "uSignal/filterImplementations/infiniteImpulseResponse.hpp"
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
