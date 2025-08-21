@@ -1,0 +1,4 @@
+#ifndef PRIVATE_ALIGNMENT_HPP
+#define PRIVATE_ALIGNMENT_HPP
+#define ALIGNMENT 64
+#endif
