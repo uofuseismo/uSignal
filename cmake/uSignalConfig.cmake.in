@@ -1,0 +1,23 @@
+# uSignal cmake module
+#
+# The following import targets are created
+#
+# ::
+#
+#   libuSignal-static
+#   libuSignal
+#
+# This module sets the following variables in your project::
+#
+#   uSignal_FOUND - true if UUSSMLModels was found on the system
+#   uSignal_INCLUDE_DIR - the directory containing UUSSMLModels headers
+#   uSignal_LIBRARY - 
+#   uSignal_STATIC_LIBRARY
+include(CMakeFindDependencyMacro)
+
+@PACKAGE_INIT@
+
+if(NOT TARGET uSignal::@PROJECT_NAME@)
+  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+
+endif()

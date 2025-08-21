@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.24)
 project(uSignal VERSION 0.1.0 LANGUAGES CXX)
 enable_testing()
 
@@ -11,22 +11,22 @@ if (${WRAP_PYTHON})
    message("Will build Python bindings")
    find_package(pybind11 REQUIRED)
 endif()
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Catch2 3 REQUIRED)
 find_package(IPP)
 #find_package(FindIPP REQUIRED)
 #set(MKL_INTERFACE lp64)
 #set(MKL_LINK intel64)
 find_package(MKL)
+find_package(Threads REQUIRED)
 
 if (${IPP_FOUND})
    message("IPP found")
-   add_compile_definitions(WITH_IPP)
 else()
    message("Using native filter implementations")
 endif()
 if (${MKL_FOUND})
    message("MKL found")
-   add_compile_definitions(WITH_MKL)
 else()
    message("Using native FFT/interpolation implementations")
 endif()
@@ -73,9 +73,13 @@ set(UTILITIES_SRCS
     src/filterImplementations/infiniteImpulseResponse.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
-set(BUILD_SHARED_LIBS YES)
-add_library(uSignal SHARED ${SRCS})
-target_sources(uSignal
+if (${BUILD_SHARED_LIBS})
+   add_library(libuSignal SHARED ${SRCS})
+else()
+   add_library(libuSignal STATIC ${SRCS})
+endif()
+add_library(uSignal::libuSignal ALIAS libuSignal)
+target_sources(libuSignal
                PUBLIC
                FILE_SET HEADERS
                BASE_DIRS
@@ -91,15 +95,22 @@ target_sources(uSignal
                   include/uSignal/detrend.hpp
                   include/uSignal/taper.hpp
                )
-target_include_directories(uSignal
+if (${IPP_FOUND})
+   target_compile_definitions(libuSignal PRIVATE WITH_IPP)
+endif()
+if (${MKL_FOUND})
+   target_compile_definitions(libuSignal PRIVATE WITH_MKL)
+endif()
+target_include_directories(libuSignal
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
-target_link_libraries(uSignal
+target_link_libraries(libuSignal
                       PRIVATE MKL::MKL ${IPP_LIBRARIES})
-set_target_properties(uSignal PROPERTIES
+set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
-                      CXX_EXTENSIONS NO) 
+                      CXX_EXTENSIONS NO
+                      OUTPUT_NAME uSignal)
 
 #########################################################################################
 #                                        Unit Tests                                     #
@@ -119,7 +130,8 @@ set_target_properties(coreTests PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
                       CXX_EXTENSIONS NO)
-target_link_libraries(coreTests PRIVATE uSignal Catch2::Catch2 Catch2::Catch2WithMain)
+target_link_libraries(coreTests PRIVATE
+                      uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
 target_include_directories(coreTests
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
@@ -141,28 +153,21 @@ configure_package_config_file(
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION "${version}"
+    VERSION ${PACKAGE_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
-if (${WRAP_PYTHON})
-   install(TARGETS uSignal #pyuSignal
-           EXPORT ${PROJECT_NAME}-targets
-           FILE_SET HEADERS
-           ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-           COMPONENT libraries)
-else()
-   install(TARGETS uSignal
-           EXPORT ${PROJECT_NAME}-targets
-           FILE_SET HEADERS 
-           ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-           COMPONENT libraries)
-endif()
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/uSignal
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS libuSignal
+        EXPORT ${PROJECT_NAME}-targets
+        FILE_SET HEADERS 
+        ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        COMPONENT libraries)
+#install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/uSignal
+#        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 export(EXPORT ${PROJECT_NAME}-targets
        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 install(EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE uSignal::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
