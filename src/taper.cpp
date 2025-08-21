@@ -246,7 +246,7 @@ void Taper<T>::apply()
     }
 #ifndef NDEBUG
     assert(!x.empty());
-    assert(!pimpl->mDoDesign);
+    assert(!pImpl->mDoDesign);
 #endif
     // Copy constructor - all that's left to do now is multiply by window
     // the window function
