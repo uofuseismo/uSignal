@@ -72,7 +72,7 @@ set(UTILITIES_SRCS
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
-    src/filterImplementations/infiniteImpulseResponse.cpp)
+    src/filterImplementations/transposeDirectForm2.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
 if (${BUILD_SHARED_LIBS})
@@ -92,7 +92,7 @@ target_sources(libuSignal
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/secondOrderSections.hpp
-                  include/uSignal/filterImplementations/infiniteImpulseResponse.hpp
+                  include/uSignal/filterImplementations/transposeDirectForm2.hpp
                   include/uSignal/demean.hpp
                   include/uSignal/detrend.hpp
                   include/uSignal/taper.hpp

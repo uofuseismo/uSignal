@@ -4,7 +4,7 @@
 #include <cassert>
 #include <limits>
 #endif
-#include "uSignal/filterImplementations/infiniteImpulseResponse.hpp"
+#include "uSignal/filterImplementations/transposeDirectForm2.hpp"
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "src/alignment.hpp"
 
@@ -22,34 +22,55 @@ enum class Implementation
 
 template<typename T>
 void iirDF2Transpose(const int order,
-                     const USignal::Vector<T> bIn,
-                     const USignal::Vector<T> aIn,
+                     const T b0, 
+                     const USignal::Vector<T> bInShift1, // leading coeff b0 is given
+                     const USignal::Vector<T> aInShift1, // leading coeff assumed = 1
                      const int nSamples,
                      const USignal::Vector<T> xIn,
                      USignal::Vector<T> *yOut,
-                     USignal::Vector<T> &vInputOutputDelay)
+                     USignal::Vector<T> &vInputOutputState,
+                     USignal::Vector<T> &workSpaceIn)
 {
-    const auto b = std::assume_aligned<ALIGNMENT> (bIn.data());
-    const auto a = std::assume_aligned<ALIGNMENT> (aIn.data());
     const auto x = std::assume_aligned<ALIGNMENT> (xIn.data());
     auto y = std::assume_aligned<ALIGNMENT> (yOut->data());
     auto state
-        = std::assume_aligned<ALIGNMENT> (vInputOutputDelay.data());
-#ifndef NDEBUG
-    assert(std::abs(a[0] - 1) < 10*std::numeric_limits<T>::epsilon());
-#endif
-    for (int i = 0; i < nSamples; ++i)
+        = std::assume_aligned<ALIGNMENT> (vInputOutputState.data());
+    auto statek1
+        = std::assume_aligned<ALIGNMENT> (workSpaceIn.data());
+    if (order > 0)
     {
-        y[i] = state[0] + b[0]*x[i];
-        for (int k = 1; k < order; ++k)
+        const auto bShift1 = std::assume_aligned<ALIGNMENT> (bInShift1.data());
+        const auto aShift1 = std::assume_aligned<ALIGNMENT> (aInShift1.data());
+        for (int i = 0; i < nSamples; i++)
         {
-            state[k - 1] = state[k] + b[k]*x[i] - a[k]*y[i];
+            const auto xi = x[i];
+            const auto yi = state[0] + b0*xi;
+            // Update state.  Nominally, this is:
+            //   s[k] = s[k + 1] + b[k + 1]*x[i] - a[k + 1]*y[i]
+            // However, I have lifted the first coefficient from a and b 
+            #pragma omp simd
+            for (int k = 0; k < order - 1; k++)
+            {
+                statek1[k] = state[k + 1] + bShift1[k]*xi - aShift1[k]*yi;
+            }
+            statek1[order - 1] = bShift1[order - 1]*xi - aShift1[order - 1]*yi; 
+            std::copy(statek1, statek1 + order, state);
+            // Set output
+            y[i] = yi;
         }
-        state[order - 1] = b[order]*x[i] - a[order]*y[i];
+    }
+    else
+    {
+        // y = bNormalized[0]*x
+        std::transform(x, x + nSamples, y, 
+                       [=](const auto xi)
+                       {
+                           return b0*xi;
+                       });
     }
 }
 
-
+/*
 template<typename T>
 void iirDF2TransposeWrong(const int order,
                      const USignal::Vector<T> bIn,
@@ -84,9 +105,11 @@ void iirDF2TransposeWrong(const int order,
         vInputOutput[0] = v0;
     }
 }
+*/
 
 }
 
+/*
 #ifdef WITH_IPP
 #include <ipp/ipps.h>
 #include <ipp/ippcore.h>
@@ -130,7 +153,9 @@ return ::Implementation::DirectForm2Slow;
     return ::Implementation::DirectForm2Fast;
 }
 }
+*/
 
+/*
 template<>
 class InfiniteImpulseResponse<double>::InfiniteImpulseResponseImpl
 {
@@ -235,11 +260,6 @@ public:
                             mDelay);
             if (mIsPostProcessing)
             {
-/*
-                std::copy(mInitialConditions.begin(),
-                          mInitialConditions.end(),
-                          mDelay.begin());
-*/
             }
         }
     } 
@@ -277,30 +297,91 @@ public:
 #else
 static_assert(false, "Only IPP IIR filter implemented");
 #endif
+*/
+
+template<class T>
+class TransposeDirectForm2<T>::TransposeDirectForm2Impl
+{
+public:
+    explicit TransposeDirectForm2Impl(
+        const UFR::InfiniteImpulseResponse<double> &filterCoefficients)
+    {
+        auto bs = filterCoefficients.getNumeratorFilterCoefficients();
+        auto as = filterCoefficients.getDenominatorFilterCoefficients();        
+        mOrder = filterCoefficients.getOrder();
+        // Normalize the filter coefficients
+        auto a0 = as.at(0);
+#ifndef NDEBUG
+        assert(a0 != 0);
+#endif
+        bs = bs*(1./a0);
+        as = as*(1./a0);
+        as[0] = 1;
+        // Need these to be the same size for DF2Transpose
+        mBShift1.resize(mOrder, 0);
+        mAShift1.resize(mOrder, 0);
+        mB0 = bs[0];
+        std::copy(bs.begin() + 1, bs.end(), mBShift1.begin());
+        // Ignore leading coefficient which is 1
+        std::copy(as.begin() + 1, as.end(), mAShift1.begin());
+        mDelayLine.resize(mOrder, 0);
+        mWorkSpace.resize(mOrder, 0);
+        mInitialConditions.resize(mOrder, 0);
+        mInitialized = true;
+    }
+    void apply(const USignal::Vector<T> &x, USignal::Vector<T> *y)
+    {
+        auto nSamples = static_cast<int> (x.size());
+        if (y->size() != nSamples){y->resize(nSamples, 0);}
+        iirDF2Transpose(mOrder,
+                        mB0, mBShift1, mAShift1,
+                        nSamples,
+                        x, y,
+                        mDelayLine,
+                        mWorkSpace);
+        if (mIsPostProcessing)
+        {
+            std::copy(mInitialConditions.begin(), mInitialConditions.end(),
+                      mDelayLine.begin());
+        }
+    } 
+
+
+//private:
+    USignal::Vector<T> mBShift1;
+    USignal::Vector<T> mAShift1;
+    USignal::Vector<T> mDelayLine;
+    USignal::Vector<T> mWorkSpace;
+    USignal::Vector<T> mInitialConditions;
+    T mB0{0};
+    int mOrder{0};
+    bool mIsPostProcessing{false};
+    bool mInitialized{false};
+};
 
 /// Constructor
 template<class T>
-InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
+TransposeDirectForm2<T>::TransposeDirectForm2(
     const UFR::InfiniteImpulseResponse<T> &filterCoefficients) :
-    pImpl(std::make_unique<InfiniteImpulseResponseImpl> (filterCoefficients))
+    pImpl(std::make_unique<TransposeDirectForm2Impl> (filterCoefficients))
 {
 
 }
 
 /// Destructor
 template<class T>
-InfiniteImpulseResponse<T>::~InfiniteImpulseResponse() = default;
+TransposeDirectForm2<T>::~TransposeDirectForm2() = default;
 
 /// Initialized?
 template<class T>
-bool InfiniteImpulseResponse<T>::isInitialized() const noexcept
+bool TransposeDirectForm2<T>::isInitialized() const noexcept
 {
     return pImpl->mInitialized;
 }
 
 /// Apply
 template<class T>
-void InfiniteImpulseResponse<T>::apply()
+void TransposeDirectForm2<T>::apply()
 {
     if (!isInitialized()){throw std::runtime_error("Class not initialized");}
     const auto x = this->getInputReference();
@@ -315,6 +396,6 @@ void InfiniteImpulseResponse<T>::apply()
 }
 
 ///--------------------------------------------------------------------------///
-template class USignal::FilterImplementations::InfiniteImpulseResponse<double>;
+template class USignal::FilterImplementations::TransposeDirectForm2<double>;
 //template class USignal::FilterImplementations::InfiniteImpulseResponse<float>;
 

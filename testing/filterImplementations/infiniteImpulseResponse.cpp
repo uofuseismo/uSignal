@@ -3,8 +3,9 @@
 #include <fstream>
 #include <complex>
 #include <vector>
+#include <chrono>
 #include <cmath>
-#include "uSignal/filterImplementations/infiniteImpulseResponse.hpp"
+#include "uSignal/filterImplementations/transposeDirectForm2.hpp"
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -20,8 +21,8 @@ namespace
 
 std::filesystem::path dataDirectory{"data"};
 std::filesystem::path inputSignalFileName{dataDirectory/"gse2.txt"};
-std::filesystem::path highOrderIIRFileName{dataDirectory/"iirReference1.txt"};
-std::filesystem::path lowOrderIIRFileName{dataDirectory/"iirReference2.txt"};
+std::filesystem::path highOrderIIRFileName{dataDirectory/"transposeDF2.gse2.txt"};
+//std::filesystem::path lowOrderIIRFileName{dataDirectory/"iirReference2.txt"};
 
 template<typename T>
 Vector<T> loadSignal(const std::filesystem::path &fileName)
@@ -37,16 +38,16 @@ Vector<T> loadSignal(const std::filesystem::path &fileName)
     std::string line;
     while (std::getline(signalFile, line))
     {
-        T yi;
+        double yi;
         std::sscanf(line.c_str(), "%lf\n", &yi);
-        signal.push_back(yi);
+        signal.push_back(static_cast<T> (yi));
     }
     signalFile.close();
     return signal;
 }
 }
 
-TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::InfiniteImpulseResponse",
+TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::TransposeDirectForm2",
                    "[TypeName][template]",
                    double)
 {
@@ -70,29 +71,36 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::InfiniteImpulseResponse",
                          0.441930568732716});
     USignal::FilterRepresentations::InfiniteImpulseResponse<TestType>
          iirFilterCoefficients{b, a};
-    USignal::FilterImplementations::InfiniteImpulseResponse<TestType>
-         iir{iirFilterCoefficients};
+
     auto inputSignal = ::loadSignal<TestType> (inputSignalFileName);
     auto yRef = ::loadSignal<TestType> (highOrderIIRFileName);
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+    USignal::FilterImplementations::TransposeDirectForm2<TestType>
+         iir{iirFilterCoefficients};
     REQUIRE_NOTHROW(iir.setInput(inputSignal));
+    //auto startTime = std::chrono::high_resolution_clock::now();
     REQUIRE_NOTHROW(iir.apply());
+    //auto endTime = std::chrono::high_resolution_clock::now();
     auto outputSignal = iir.getOutput();
-/*
+
+    auto endTime = std::chrono::high_resolution_clock::now(); 
+    auto elapsedTime
+        = std::chrono::duration_cast<std::chrono::microseconds>
+          (endTime - startTime).count()*1.e-6;
+    std::cout << "Processing time: " << elapsedTime << std::endl;
+
     REQUIRE(outputSignal.size() == yRef.size());
-    double l2Error{0};
+    TestType l1Error{0};
     for (int i = 0; i < yRef.size(); ++i)
     {
         auto residual = std::abs(yRef[i] - outputSignal[i]);
-        l2Error = l2Error + residual*residual;
+        l1Error = std::max(l1Error, residual);
     }
-    l2Error = std::sqrt(l2Error);
-    auto rmse = l2Error/yRef.size();
-    REQUIRE(rmse < 0.05);
+    REQUIRE(l1Error < std::numeric_limits<TestType>::epsilon()*100);
+//    l2Error = std::sqrt(l2Error);
+//    auto rmse = l2Error/yRef.size();
+//    REQUIRE(rmse < 0.05);
 //std::cout << "rmse: " << std::setprecision(12) << l2Error/yRef.size() << std::endl;
-*/
- for (int i = yRef.size() - 15; i < yRef.size(); ++i)
-// for (int i = 0; i < 25; ++i)
- {
- //    std::cout << outputSignal[i] << " " << yRef[i] << std::endl;
- }
+// for (int i = yRef.size() - 15; i < yRef.size(); ++i)
 }
