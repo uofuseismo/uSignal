@@ -44,7 +44,7 @@ void iirDF2Transpose(const int order,
         for (int i = 0; i < nSamples; i++)
         {
             const auto xi = x[i];
-            const auto yi = state[0] + b0*xi;
+            const auto yi = state[0] + b0*x[i];
             // Update state.  Nominally, this is:
             //   s[k] = s[k + 1] + b[k + 1]*x[i] - a[k + 1]*y[i]
             // However, I have lifted the first coefficient from a and b 
@@ -53,8 +53,9 @@ void iirDF2Transpose(const int order,
             {
                 statek1[k] = state[k + 1] + bShift1[k]*xi - aShift1[k]*yi;
             }
-            statek1[order - 1] = bShift1[order - 1]*xi - aShift1[order - 1]*yi; 
-            std::copy(statek1, statek1 + order, state);
+            //statek1[order - 1] = bShift1[order - 1]*x[i] - aShift1[order - 1]*yi; 
+            std::copy(statek1, statek1 + order + 1, state);
+            state[order - 1] = bShift1[order - 1]*x[i] - aShift1[order - 1]*yi; 
             // Set output
             y[i] = yi;
         }
@@ -304,7 +305,7 @@ class TransposeDirectForm2<T>::TransposeDirectForm2Impl
 {
 public:
     explicit TransposeDirectForm2Impl(
-        const UFR::InfiniteImpulseResponse<double> &filterCoefficients)
+        const UFR::InfiniteImpulseResponse<T> &filterCoefficients)
     {
         auto bs = filterCoefficients.getNumeratorFilterCoefficients();
         auto as = filterCoefficients.getDenominatorFilterCoefficients();        
@@ -314,8 +315,8 @@ public:
 #ifndef NDEBUG
         assert(a0 != 0);
 #endif
-        bs = bs*(1./a0);
-        as = as*(1./a0);
+        bs = bs*static_cast<T> ((1./a0));
+        as = as*static_cast<T> ((1./a0));
         as[0] = 1;
         // Need these to be the same size for DF2Transpose
         mBShift1.resize(mOrder, 0);
@@ -397,5 +398,5 @@ void TransposeDirectForm2<T>::apply()
 
 ///--------------------------------------------------------------------------///
 template class USignal::FilterImplementations::TransposeDirectForm2<double>;
-//template class USignal::FilterImplementations::InfiniteImpulseResponse<float>;
+template class USignal::FilterImplementations::TransposeDirectForm2<float>;
 
