@@ -72,6 +72,7 @@ set(UTILITIES_SRCS
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
+    src/filterImplementations/finiteImpulseResponse.cpp
     src/filterImplementations/secondOrderSections.cpp
     src/filterImplementations/transposeDirectForm2.cpp)
 set(SRCS ${UTILITIES_SRCS})
@@ -126,6 +127,7 @@ add_executable(coreTests
                testing/filterRepresentations/infiniteImpulseResponse.cpp
                testing/filterRepresentations/secondOrderSections.cpp
                testing/utilities/math.cpp
+               testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp
                testing/utilities/demean.cpp
                testing/utilities/window.cpp

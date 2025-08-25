@@ -10,6 +10,8 @@
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/filterRepresentations/secondOrderSections.hpp"
 #include "uSignal/vector.hpp"
+#include "loadSignal.hpp"
+#include "infinityNorm.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
@@ -27,6 +29,7 @@ std::filesystem::path highOrderIIRFileName{dataDirectory/"transposeDF2.gse2.txt"
 std::filesystem::path sosFileName{dataDirectory/"sosReference.gse2.txt"};
 //std::filesystem::path lowOrderIIRFileName{dataDirectory/"iirReference2.txt"};
 
+/*
 template<typename T>
 Vector<T> loadSignal(const std::filesystem::path &fileName)
 {
@@ -64,6 +67,7 @@ T computeInfinityNorm(const USignal::Vector<T> &yTrue,
     }
     return error;
 }
+*/
 
 }
 
@@ -154,7 +158,7 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::SecondOrderSections",
             sos{filterCoefficients};
         REQUIRE_NOTHROW(sos.setInput(inputSignal));
         REQUIRE_NOTHROW(sos.apply());
-        auto outputSignal = sos.getOutput();
+        const auto outputSignal = sos.getOutputReference();
 
         auto endTime = std::chrono::high_resolution_clock::now();
         auto elapsedTime
@@ -206,7 +210,7 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::TransposeDirectForm2",
         //auto startTime = std::chrono::high_resolution_clock::now();
         REQUIRE_NOTHROW(iir.apply());
         //auto endTime = std::chrono::high_resolution_clock::now();
-        auto outputSignal = iir.getOutput();
+        auto outputSignal = iir.getOutputReference();
 
         auto endTime = std::chrono::high_resolution_clock::now(); 
         auto elapsedTime
@@ -234,12 +238,12 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::TransposeDirectForm2",
         //auto startTime = std::chrono::high_resolution_clock::now();
         REQUIRE_NOTHROW(iir.apply());
         //auto endTime = std::chrono::high_resolution_clock::now();
-        auto outputSignal = iir.getOutput();
+        const auto outputSignal = iir.getOutput();
         auto endTime = std::chrono::high_resolution_clock::now();
         auto elapsedTime
             = std::chrono::duration_cast<std::chrono::microseconds>
               (endTime - startTime).count()*1.e-6;
-        std::cout << "High order processing time: " << elapsedTime << std::endl;
+        std::cout << "Order 0 processing time: " << elapsedTime << std::endl;
 
         REQUIRE(outputSignal.size() == inputSignal.size());
 

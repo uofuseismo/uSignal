@@ -74,7 +74,7 @@ USignal::Vector<U> ISystem<U, T>::getInput() const
 template<class U, class T>
 const USignal::Vector<U>& ISystem<U, T>::getInputReference() const noexcept
 {
-    return pImpl->mX;
+    return *&pImpl->mX;
 }
 
 /// Reset class
@@ -109,8 +109,8 @@ USignal::Vector<T> ISystem<U, T>::getOutput() const
 template<class U, class T>
 const USignal::Vector<T>& ISystem<U, T>::getOutputReference() const noexcept
 {
-    return pImpl->mY;
-} 
+    return *&pImpl->mY;
+}
 
 ///--------------------------------------------------------------------------///
 ///                             Template Instantiation                       ///
