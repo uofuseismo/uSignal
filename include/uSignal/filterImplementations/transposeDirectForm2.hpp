@@ -15,14 +15,16 @@ template<class T>
 class TransposeDirectForm2 final : public USignal::System::ISystem<T, T>
 {
 public:
+    /// @param[in] filterCoefficients  The infinite impulse repsonse filter
+    ///                                coefficients.
     explicit TransposeDirectForm2(const USignal::FilterRepresentations::InfiniteImpulseResponse<T> &filterCoefficients);
     /// @result True indicates the 
     [[nodiscard]] bool isInitialized() const noexcept final;   
     void apply() final;
-
+    /// @brief Destructor.
     ~TransposeDirectForm2() override;
 
-    TransposeDirectForm2() = default;
+    TransposeDirectForm2() = delete;
 private:
     class TransposeDirectForm2Impl;
     std::unique_ptr<TransposeDirectForm2Impl> pImpl;

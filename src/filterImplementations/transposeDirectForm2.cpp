@@ -20,6 +20,8 @@ enum class Implementation
     DirectForm2Slow
 };
 
+// Algorithm based on: 
+// https://github.com/scipy/scipy/blob/v1.16.1/scipy/signal/_lfilter.cc
 template<typename T>
 void iirDF2Transpose(const int order,
                      const T b0, 
@@ -346,8 +348,6 @@ public:
                       mDelayLine.begin());
         }
     } 
-
-
 //private:
     USignal::Vector<T> mBShift1;
     USignal::Vector<T> mAShift1;
@@ -396,6 +396,8 @@ void TransposeDirectForm2<T>::apply()
     this->setOutput(std::move(y));
 }
 
+///--------------------------------------------------------------------------///
+///                            Template Instantiation                        ///
 ///--------------------------------------------------------------------------///
 template class USignal::FilterImplementations::TransposeDirectForm2<double>;
 template class USignal::FilterImplementations::TransposeDirectForm2<float>;

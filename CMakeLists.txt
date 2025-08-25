@@ -72,6 +72,7 @@ set(UTILITIES_SRCS
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
+    src/filterImplementations/secondOrderSections.cpp
     src/filterImplementations/transposeDirectForm2.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
@@ -92,6 +93,7 @@ target_sources(libuSignal
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/secondOrderSections.hpp
+                  include/uSignal/filterImplementations/secondOrderSections.hpp
                   include/uSignal/filterImplementations/transposeDirectForm2.hpp
                   include/uSignal/demean.hpp
                   include/uSignal/detrend.hpp
