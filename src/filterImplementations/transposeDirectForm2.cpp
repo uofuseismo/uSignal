@@ -33,16 +33,18 @@ void iirDF2Transpose(const int order,
                      USignal::Vector<T> &vInputOutputState,
                      USignal::Vector<T> &workSpaceIn)
 {
-    const auto x = std::assume_aligned<ALIGNMENT> (xIn.data());
-    auto y = std::assume_aligned<ALIGNMENT> (yOut->data());
-    auto state
+    const T *__restrict__ x = std::assume_aligned<ALIGNMENT> (xIn.data());
+    T *__restrict__ y = std::assume_aligned<ALIGNMENT> (yOut->data());
+    T *__restrict__ state
         = std::assume_aligned<ALIGNMENT> (vInputOutputState.data());
-    auto statek1
+    T *__restrict__ statek1
         = std::assume_aligned<ALIGNMENT> (workSpaceIn.data());
     if (order > 0)
     {
-        const auto bShift1 = std::assume_aligned<ALIGNMENT> (bInShift1.data());
-        const auto aShift1 = std::assume_aligned<ALIGNMENT> (aInShift1.data());
+        const T *__restrict__ bShift1
+            = std::assume_aligned<ALIGNMENT> (bInShift1.data());
+        const T *__restrict__ aShift1
+            = std::assume_aligned<ALIGNMENT> (aInShift1.data());
         for (int i = 0; i < nSamples; i++)
         {
             const auto xi = x[i];
@@ -55,8 +57,7 @@ void iirDF2Transpose(const int order,
             {
                 statek1[k] = state[k + 1] + bShift1[k]*xi - aShift1[k]*yi;
             }
-            //statek1[order - 1] = bShift1[order - 1]*x[i] - aShift1[order - 1]*yi; 
-            std::copy(statek1, statek1 + order + 1, state);
+            std::copy(statek1, statek1 + order, state);
             state[order - 1] = bShift1[order - 1]*x[i] - aShift1[order - 1]*yi; 
             // Set output
             y[i] = yi;
@@ -64,7 +65,6 @@ void iirDF2Transpose(const int order,
     }
     else
     {
-        // y = bNormalized[0]*x
         std::transform(x, x + nSamples, y, 
                        [=](const auto xi)
                        {
@@ -320,22 +320,34 @@ public:
         bs = bs*static_cast<T> ((1./a0));
         as = as*static_cast<T> ((1./a0));
         as[0] = 1;
-        // Need these to be the same size for DF2Transpose
-        mBShift1.resize(mOrder, 0);
-        mAShift1.resize(mOrder, 0);
         mB0 = bs[0];
-        std::copy(bs.begin() + 1, bs.end(), mBShift1.begin());
-        // Ignore leading coefficient which is 1
-        std::copy(as.begin() + 1, as.end(), mAShift1.begin());
-        mDelayLine.resize(mOrder, 0);
-        mWorkSpace.resize(mOrder, 0);
-        mInitialConditions.resize(mOrder, 0);
+        if (mOrder > 0)
+        {
+            // Need these to be the same size for DF2Transpose
+            mBShift1.resize(mOrder, 0);
+            mAShift1.resize(mOrder, 0);
+            std::copy(bs.begin() + 1, bs.end(), mBShift1.begin());
+            // Ignore leading coefficient which is 1
+            std::copy(as.begin() + 1, as.end(), mAShift1.begin());
+
+            mDelayLine.resize(mOrder, 0);
+            mWorkSpace.resize(mOrder, 0);
+            mInitialConditions.resize(mOrder, 0);
+        }
         mInitialized = true;
     }
     void apply(const USignal::Vector<T> &x, USignal::Vector<T> *y)
     {
+#ifndef NDEBUG
+        assert(y);
+#endif
         auto nSamples = static_cast<int> (x.size());
-        if (y->size() != nSamples){y->resize(nSamples, 0);}
+        if (nSamples < 1){return;}
+        constexpr T zero{0};
+        if (y->empty() || y->size() != nSamples)
+        {
+            y->resize(nSamples, zero);
+        }
         iirDF2Transpose(mOrder,
                         mB0, mBShift1, mAShift1,
                         nSamples,
