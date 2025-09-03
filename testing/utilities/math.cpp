@@ -215,3 +215,73 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ComplexPolynomial",
 
 }
 */
+
+TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ExpandPolynomial",
+                   "[TypeName][template]",
+                   double, float)
+{
+    const TestType tolerance{50*std::numeric_limits<TestType>::epsilon()};
+    constexpr TestType zero{0};
+    constexpr TestType one{1};
+    SECTION("Edge Case Order 0")
+    {
+        USignal::Vector<std::complex<TestType>> roots;
+        auto coefficients
+            = USignal::Utilities::Math::Polynomial::expand(roots);
+        REQUIRE(coefficients.size() == 1);
+        CHECK(std::abs(coefficients.at(0)) ==
+              Catch::Approx(one).margin(tolerance));
+    }
+    SECTION("Edge Case Order 1")
+    {
+        USignal::Vector<std::complex<TestType>> roots;
+        roots.push_back( -1 + 2i );
+        auto coefficients
+            = USignal::Utilities::Math::Polynomial::expand(roots);
+        REQUIRE(coefficients.size() == 2); 
+        CHECK(std::abs(coefficients.at(0)) ==
+              Catch::Approx(one).margin(tolerance));
+        // Coefficient 1 =-root -> 1 + root = 0
+        CHECK(std::abs(coefficients.at(1) + roots.at(0)) ==
+              Catch::Approx(zero).margin(tolerance));
+    }
+    SECTION("Complex Test")
+    {
+        USignal::Vector<std::complex<TestType>> reference;
+        reference.push_back( 1    + 0i);
+        reference.push_back(-5.3  + 1i);
+        reference.push_back( 6.3  - 5.3i);
+        reference.push_back(-10.6 + 4.3i);
+        reference.push_back( 8.6  + 0i);
+        USignal::Vector<std::complex<TestType>> roots;
+        roots.push_back(1 + 0i);
+        roots.push_back(0 + 1i);
+        roots.push_back(4.3 + 0i);
+        roots.push_back(0 - 2i);
+        auto coefficients
+            = USignal::Utilities::Math::Polynomial::expand(roots);
+        REQUIRE(coefficients.size() == reference.size());
+        for (int i = 0; i < static_cast<int> (reference.size()); ++i)
+        {
+            CHECK(std::abs(reference.at(i) - coefficients.at(i)) ==
+                  Catch::Approx(zero).margin(tolerance));
+        }
+    }
+    SECTION("Real Test")
+    {
+        USignal::Vector<TestType> reference( { 1., -4.3, -3., 14.9, -8.6} );
+        USignal::Vector<std::complex<TestType>> roots;
+        roots.push_back(   1 + 0i);
+        roots.push_back(   1 + 0i);
+        roots.push_back( 4.3 + 0i);
+        roots.push_back(-2.0 + 0i);
+        auto coefficients
+            = USignal::Utilities::Math::Polynomial::expandToRealCoefficients(roots);
+        REQUIRE(coefficients.size() == reference.size());
+        for (int i = 0; i < static_cast<int> (reference.size()); ++i)
+        {
+            CHECK(coefficients.at(i) ==
+                  Catch::Approx(reference.at(i)).margin(tolerance));
+        }
+    }
+}

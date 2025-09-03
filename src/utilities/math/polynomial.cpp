@@ -2,6 +2,7 @@
 #include <memory>
 #include <complex>
 #include <algorithm>
+#include <limits>
 #include "polynomial.hpp"
 #include "src/alignment.hpp"
 
@@ -171,6 +172,90 @@ USignal::Utilities::Math::Polynomial::computeRoots(
     return ::computeEigenvalues<T>(A, n, lda);
 }
 
+/// Expand a polynomial
+template<typename T>
+USignal::Vector<std::complex<T>>
+USignal::Utilities::Math::Polynomial::expand(
+    const USignal::Vector<std::complex<T>> &roots)
+{
+    constexpr std::complex<T> one{1 + 0i};
+    USignal::Vector<std::complex<T>> result;
+    auto order = static_cast<int> (roots.size());
+    result.resize(order + 1);
+    // Special case is order 0
+    if (order == 0)
+    {
+        result[0] = one;
+        return result;
+    }
+    // Linear case: 1*x - r_0
+    if (order == 1)
+    {
+        result[0] = one;
+        result[1] =-roots[0];
+        return result;
+    }
+    constexpr std::complex<T> zero{0 + 0i};
+    USignal::Vector<std::complex<T>> temp1(roots.size() + 1);
+    USignal::Vector<std::complex<T>> temp2(roots.size() + 1);
+    // Initialize
+    result[0] =-roots[0];
+    result[1] = one;
+    for (int i = 2; i <= order; ++i)
+    {
+        // x*(a_0 + a_1 x + ... + a_n x^{n-1}) = a_0 x + a_1 x^2 + ... + a_n x^i 
+        // Shift right
+        temp1[0] = zero;
+        for (int j = 1; j <= i; ++j)
+        {
+            temp1[j] = result[j - 1];
+        }
+        // -p_i*(a_0 + .... + a_n x^{i-1}) =-p_i a_0 - ... p_i a_n x^{i-1}
+        const auto p_i = roots[i - 1];
+        for (int j = 0; j < i; ++j)
+        {
+            temp2[j] = -p_i*result[j];
+        }
+        temp2[i] = zero;
+        // -p_i a_0 + p_i a_1 x + ... + p_i a_n x^{i-1}
+        //          -     a_0 x - ...                   - a_n x^i
+        for (int j = 0; j < i + 1; ++j)
+        {
+            result[j] = temp1[j] + temp2[j];
+        }
+    }
+    /*
+    // Clean up some numerical junk
+    constexpr T tolerance{std::numeric_limits<T>::epsilon()};
+    for (auto &ci : result)
+    {
+        if (std::abs(ci) < tolerance){ci = std::real(ci) + 0i;}
+    }
+    */
+    // Reverse for consistency with Matlab
+    std::reverse(result.data(), result.data() + result.size());
+    return result;
+}
+
+template<typename T>
+USignal::Vector<T>
+USignal::Utilities::Math::Polynomial::expandToRealCoefficients(
+    const USignal::Vector<std::complex<T>> &roots)
+{
+    auto complexPolynomialCoefficients = expand(roots);
+    USignal::Vector<T> polynomialCoefficients(
+        complexPolynomialCoefficients.size());
+    const auto zc
+        = std::assume_aligned<ALIGNMENT>
+          (complexPolynomialCoefficients.data());
+    auto c = std::assume_aligned<ALIGNMENT> (polynomialCoefficients.data());
+    for (int i = 0; i < static_cast<int> (polynomialCoefficients.size()); ++i)
+    {
+        c[i] = std::real(zc[i]);
+    }
+    return polynomialCoefficients;
+}
+
 ///--------------------------------------------------------------------------///
 ///                             Instantiation                                ///
 ///--------------------------------------------------------------------------///
@@ -195,3 +280,9 @@ template USignal::Vector<std::complex<double>>
    USignal::Utilities::Math::Polynomial::computeRoots(const USignal::Vector<double> &coefficients);
 template USignal::Vector<std::complex<float>>
    USignal::Utilities::Math::Polynomial::computeRoots(const USignal::Vector<float> &coefficients);
+
+template USignal::Vector<double>
+   USignal::Utilities::Math::Polynomial::expandToRealCoefficients(const USignal::Vector<std::complex<double>> &);
+template USignal::Vector<float>
+   USignal::Utilities::Math::Polynomial::expandToRealCoefficients(const USignal::Vector<std::complex<float>> &);
+

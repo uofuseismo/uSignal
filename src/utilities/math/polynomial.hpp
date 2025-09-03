@@ -15,7 +15,7 @@ namespace USignal::Utilities::Math::Polynomial
 template<typename T>
 USignal::Vector<T> 
 evaluate(const USignal::Vector<T> &polynomialCoefficients,
-            const USignal::Vector<T> &evaluationPoints);
+         const USignal::Vector<T> &evaluationPoints);
 
 /// @brief Computes the roots of a polynomial:
 ///        p(x) = p_0 x^n + p_1 x^{n-1} + \cdots + p_n
@@ -26,5 +26,14 @@ template<typename T>
 USignal::Vector<std::complex<T>>
    computeRoots(const USignal::Vector<T> &coefficients);
 
+/// @brief Expands a polynomial from its roots:
+/// @param[in] roots  The roots of the polynomial.
+template<typename T>
+USignal::Vector<std::complex<T>> expand(const USignal::Vector<std::complex<T>> &roots);
+/// @brief This is a specialized variant where we force the polynomial
+///        coefficients to be real.  Typically, filter design produces
+///        real-valued coefficients.
+template<typename T>
+USignal::Vector<T> expandToRealCoefficients(const USignal::Vector<std::complex<T>> &roots);
 }
 #endif
