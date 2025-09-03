@@ -69,6 +69,7 @@ set(UTILITIES_SRCS
     src/window.cpp
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
+    src/filterDesign/response.cpp
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
@@ -91,6 +92,7 @@ target_sources(libuSignal
                FILES
                   include/uSignal/version.hpp
                   include/uSignal/system/system.hpp
+                  include/uSignal/filterDesign/response.hpp
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/secondOrderSections.hpp
@@ -127,6 +129,7 @@ add_executable(coreTests
                testing/filterRepresentations/infiniteImpulseResponse.cpp
                testing/filterRepresentations/secondOrderSections.cpp
                testing/utilities/math.cpp
+               testing/filterDesign/response.cpp
                testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp
                testing/utilities/demean.cpp
