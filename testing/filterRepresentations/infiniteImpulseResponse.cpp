@@ -13,7 +13,7 @@ using namespace USignal;
 
 TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::InfiniteImpulseResponse",
                    "[TypeName][template]",
-                   int, float, double)
+                   float, double)
 {
     int nNumeratorCoefficients{5}; 
     USignal::Vector<TestType> numeratorCoefficients;
@@ -62,6 +62,83 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::InfiniteImpulseResponse",
         {
             CHECK(a[i] == Catch::Approx(denominatorCoefficients[i]));
         }
+    }
+
+    SECTION("From ZPK")
+    {
+        /*
+        fs = 100  # sampling frequency
+        om_c = 2 * np.pi * np.array([7, 13])  # corner frequencies
+        zz_s, pp_s, k_s = signal.butter(4, om_c, btype='bandpass', analog=True, output='zpk')
+        print("in z")
+        for v in zz_s:
+            print(v)
+        print("in p")
+        for v in pp_s:
+            print(v)
+        print(k_s)
+        print("analog transfer function")
+        b_s, a_s = signal.zpk2tf(zz_s, pp_s, k_s)
+        print("b_s")
+        for v in b_s:
+            print(v)
+        print("a_s")
+        for v in a_s:
+            print(v)
+        """
+        */
+        USignal::Vector<std::complex<TestType>> zeros(
+           std::vector<std::complex<TestType>> { 0 + 0i, 
+                                                 0 + 0i, 
+                                                 0 + 0i, 
+                                                 0 + 0i });
+        USignal::Vector<std::complex<TestType>> poles(
+            std::vector<std::complex<TestType>> {
+                -5.188311655529189 - 44.616532466296775i,
+                -15.243050879954183 - 50.63131935118821i,
+                -15.243050879954183 + 50.63131935118821i,
+                -5.188311655529189 + 44.616532466296775i,
+                -9.238513861695127 + 79.44597029196994i,
+                -19.586386945718992 + 65.05814486841253i,
+                -19.586386945718992 - 65.05814486841253i,
+                -9.238513861695127-79.44597029196994i});
+        constexpr TestType gain{2019874.9116810758};
+        USignal::FilterRepresentations::ZerosPolesGain
+            zpk{zeros, poles, gain};
+
+        USignal::FilterRepresentations::InfiniteImpulseResponse<TestType>
+            ba{zpk};
+       
+        USignal::Vector<TestType> bRef(
+            std::vector<TestType> {2019874.9116810758,
+                                   0.0,
+                                   0.0,
+                                   0.0,
+                                   0.0} );
+        USignal::Vector<TestType> aRef(
+            std::vector<TestType> {1.0,
+                                   98.51252668579498,
+                                   19222.50296499584,
+                                   1201737.668338526,
+                                   114322312.96086375,
+                                   4317285838.461515,
+                                   248091676925.3078,
+                                   4567671318148.967,
+                                   166572964959828.47});
+        auto b = ba.getNumeratorFilterCoefficients();
+        auto a = ba.getDenominatorFilterCoefficients();
+        REQUIRE(b.size() == bRef.size());
+        REQUIRE(a.size() == aRef.size());
+        REQUIRE(static_cast<int> (std::max(b.size(), a.size())) - 1
+                == ba.getOrder());
+        for (int i = 0; i < static_cast<int> (b.size()); ++i)
+        {
+            CHECK(std::abs(bRef[i] - b[i]) < 1.e-1); 
+        }
+        CHECK(std::abs(aRef[0] - a[0]) < 1.e-5); 
+        CHECK(std::abs(aRef[1] - a[1]) < 1.e-5);
+        CHECK(std::abs(aRef[2] - a[2]) < 1.e-1);
+        //CHECK(std::abs(aRef[8] - a[8]) < 100);
     }
 }
 

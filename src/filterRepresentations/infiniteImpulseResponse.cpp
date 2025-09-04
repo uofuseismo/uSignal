@@ -1,5 +1,8 @@
+#include <iostream>
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
+#include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/vector.hpp"
+#include "src/utilities/math/polynomial.hpp"
 
 using namespace USignal::FilterRepresentations;
 
@@ -43,6 +46,55 @@ InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
                     static_cast<int> (denominatorCoefficients.size()) )
         - 1;
 }
+
+/// Constructor
+template<typename T>
+InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
+    const ZerosPolesGain<T> &zpk) :
+    pImpl(std::make_unique<InfiniteImpulseResponseImpl> ())
+{
+    const auto zeros = zpk.getZerosReference();
+    const auto poles = zpk.getPolesReference();
+    auto gain = zpk.getGain();
+    // Compute polynomial representation of zeros by expanding:
+    // (z - z_1)*(z - z_2)*...*(z - z_n)
+    auto b = Utilities::Math::Polynomial::expandToRealCoefficients(zeros);
+    b = b*gain; // Introduce gain into zeros
+    // Compute polynomial representation of poles by expanding:
+    // (p - p_1)*(p - p_2)*...*(p - p_n)
+    auto a = Utilities::Math::Polynomial::expandToRealCoefficients(poles);
+    pImpl->mNumeratorCoefficients = b;
+    pImpl->mDenominatorCoefficients = a;
+    pImpl->mOrder
+        = std::max( static_cast<int> (b.size()),
+                    static_cast<int> (a.size()) )
+        - 1;
+}
+
+/*
+template<>
+InfiniteImpulseResponse<std::complex<double>>::InfiniteImpulseResponse(
+    const ZerosPolesGain<std::complex<double>> &zpk) :
+    pImpl(std::make_unique<InfiniteImpulseResponseImpl> ()) 
+{
+    const auto zeros = zpk.getZerosReference();
+    const auto poles = zpk.getPolesReference();
+    auto gain = zpk.getGain();
+    // Compute polynomial representation of zeros by expanding:
+    // (z - z_1)*(z - z_2)*...*(z - z_n)
+    auto b = Utilities::Math::Polynomial::expand(zeros);
+    //b = b*gain; // Introduce gain into zeros
+    // Compute polynomial representation of poles by expanding:
+    // (p - p_1)*(p - p_2)*...*(p - p_n)
+    auto a = Utilities::Math::Polynomial::expand(poles);
+    pImpl->mNumeratorCoefficients = b;
+    pImpl->mDenominatorCoefficients = a;
+    pImpl->mOrder
+        = std::max( static_cast<int> (b.size()),
+                    static_cast<int> (a.size()) )
+        - 1;
+}
+*/
 
 /// Copy constructor
 template<typename T>
@@ -122,5 +174,5 @@ int InfiniteImpulseResponse<T>::getOrder() const noexcept
 ///--------------------------------------------------------------------------///
 template class USignal::FilterRepresentations::InfiniteImpulseResponse<double>;
 template class USignal::FilterRepresentations::InfiniteImpulseResponse<float>;
-template class USignal::FilterRepresentations::InfiniteImpulseResponse<int>;
+//template class USignal::FilterRepresentations::InfiniteImpulseResponse<int>;
 

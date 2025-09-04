@@ -3,6 +3,7 @@
 #include <memory>
 #include <array>
 #include <uSignal/vector.hpp>
+#include <uSignal/filterRepresentations/zerosPolesGain.hpp>
 namespace USignal::FilterRepresentations
 {
 /// @name InfiniteImpulseResponse "infiniteImpulseResponse.hpp"
@@ -21,6 +22,8 @@ public:
     InfiniteImpulseResponse(
         const USignal::Vector<T> &numeratorCoefficients,
         const USignal::Vector<T> &denominatorCoefficients);
+    /// @brief Constructs the IIR from its zeros, poles, and gain.
+    explicit InfiniteImpulseResponse(const ZerosPolesGain<T> &zpk);
     /// @brief Copy constructor.
     InfiniteImpulseResponse(const InfiniteImpulseResponse &secondOrderSections);
     /// @brief Move constructor.
