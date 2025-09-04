@@ -70,9 +70,11 @@ set(UTILITIES_SRCS
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
     src/filterDesign/response.cpp
+    src/filterDesign/infiniteImpulseResponse/bilinearTransform.cpp
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
+    src/filterRepresentations/zerosPolesGain.cpp
     src/filterImplementations/finiteImpulseResponse.cpp
     src/filterImplementations/secondOrderSections.cpp
     src/filterImplementations/transposeDirectForm2.cpp)
@@ -93,9 +95,11 @@ target_sources(libuSignal
                   include/uSignal/version.hpp
                   include/uSignal/system/system.hpp
                   include/uSignal/filterDesign/response.hpp
+                  include/uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/secondOrderSections.hpp
+                  include/uSignal/filterRepresentations/zerosPolesGain.hpp
                   include/uSignal/filterImplementations/secondOrderSections.hpp
                   include/uSignal/filterImplementations/transposeDirectForm2.hpp
                   include/uSignal/demean.hpp
@@ -126,10 +130,12 @@ set_target_properties(libuSignal PROPERTIES
 
 add_executable(coreTests
                testing/filterRepresentations/finiteImpulseResponse.cpp
+               testing/filterRepresentations/zerosPolesGain.cpp
                testing/filterRepresentations/infiniteImpulseResponse.cpp
                testing/filterRepresentations/secondOrderSections.cpp
                testing/utilities/math.cpp
                testing/filterDesign/response.cpp
+               testing/filterDesign/infiniteImpulseResponse.cpp
                testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp
                testing/utilities/demean.cpp
@@ -153,6 +159,7 @@ add_test(NAME coreTests
 # Need to copy the answers to the test directory
 file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
 #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
+
 
 #========================================================================================#
 #                                      Installation                                      #

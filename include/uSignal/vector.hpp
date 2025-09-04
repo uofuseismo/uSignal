@@ -65,7 +65,9 @@ public:
     static int getAlignment() noexcept;
 
     iterator begin();
+    const_iterator begin() const;
     iterator end();
+    const_iterator end() const;
     const_iterator cbegin() const;
     const_iterator cend() const;
 

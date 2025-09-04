@@ -174,6 +174,18 @@ Vector<T>::iterator Vector<T>::end()
 }
 
 template<class T>
+Vector<T>::const_iterator Vector<T>::begin() const
+{
+    return pImpl->mX.begin();
+}
+
+template<class T>
+Vector<T>::const_iterator Vector<T>::end() const
+{
+    return pImpl->mX.end();
+}
+
+template<class T>
 Vector<T>::const_iterator Vector<T>::cbegin() const
 {
     return pImpl->mX.cbegin();
