@@ -70,6 +70,7 @@ set(UTILITIES_SRCS
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
     src/filterDesign/response.cpp
+    src/filterDesign/finiteImpulseResponse/windowBased.cpp
     src/filterDesign/infiniteImpulseResponse/bilinearTransform.cpp
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
@@ -77,7 +78,8 @@ set(UTILITIES_SRCS
     src/filterRepresentations/zerosPolesGain.cpp
     src/filterImplementations/finiteImpulseResponse.cpp
     src/filterImplementations/secondOrderSections.cpp
-    src/filterImplementations/transposeDirectForm2.cpp)
+    src/filterImplementations/transposeDirectForm2.cpp
+    src/transforms/fourier/forward.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
 if (${BUILD_SHARED_LIBS})
@@ -102,6 +104,7 @@ target_sources(libuSignal
                   include/uSignal/filterRepresentations/zerosPolesGain.hpp
                   include/uSignal/filterImplementations/secondOrderSections.hpp
                   include/uSignal/filterImplementations/transposeDirectForm2.hpp
+                  include/uSignal/transforms/fourier/forward.hpp
                   include/uSignal/demean.hpp
                   include/uSignal/detrend.hpp
                   include/uSignal/taper.hpp
@@ -138,6 +141,7 @@ add_executable(coreTests
                testing/filterDesign/infiniteImpulseResponse.cpp
                testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp
+               testing/transforms/fourier.cpp
                testing/utilities/demean.cpp
                testing/utilities/window.cpp
                testing/utilities/taper.cpp
@@ -160,6 +164,12 @@ add_test(NAME coreTests
 file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
 #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
 
+add_executable(digitalApproximation modules/digitalApproximation.cpp)
+set_target_properties(digitalApproximation PROPERTIES
+                      CXX_STANDARD 20
+                      CXX_STANDARD_REQUIRED YES 
+                      CXX_EXTENSIONS NO) 
+target_link_libraries(digitalApproximation PRIVATE uSignal::libuSignal)
 
 #========================================================================================#
 #                                      Installation                                      #

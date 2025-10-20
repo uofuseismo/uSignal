@@ -120,5 +120,6 @@ template class USignal::System::ISystem<float,  float>;
 template class USignal::System::ISystem<float,  double>;
 template class USignal::System::ISystem<double, float>;
 template class USignal::System::ISystem<double, std::complex<double>>;
+template class USignal::System::ISystem<float, std::complex<float>>;
 template class USignal::System::ISystem<std::complex<double>, double>;
 template class USignal::System::ISystem<std::complex<float>, float>;
