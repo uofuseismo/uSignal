@@ -14,11 +14,14 @@ template<class T>
 class SecondOrderSections final : public USignal::System::ISystem<T, T>
 {
 public:
+    /// @brief Constructor.
     /// @param[in] filterCoefficients   The second order section filter
     ///                                 coefficients.
     explicit SecondOrderSections(const USignal::FilterRepresentations::SecondOrderSections<T> &filterCoefficients);
     /// @result True indicates the 
     [[nodiscard]] bool isInitialized() const noexcept final;   
+
+    /// @brief Filters the signal.
     void apply() final;
 
     ~SecondOrderSections() override;

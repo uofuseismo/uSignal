@@ -19,7 +19,9 @@ class FiniteImpulseResponse<double>::FiniteImpulseResponseImpl
 public:
     FiniteImpulseResponseImpl(
         const UFR::FiniteImpulseResponse<double> &filterCoefficients,
-        Implementation implementation)
+        Implementation implementation,
+        const bool isRealTime) :
+        mIsRealTime(isRealTime)
     {
         mOrder = filterCoefficients.getOrder();
         if (mOrder < 0)
@@ -78,6 +80,22 @@ public:
             throw std::runtime_error("Failed to initialize FIR state");
         }
         mInitialized = true;
+    }
+    /// Sets the initial conditions
+    void setInitialConditions(const USignal::Vector<> &initialConditions)
+    {
+        if (static_cast<int> (initialConditions.size()) != mOrder)
+        {
+            throw std::invalid_argument("Initial conditions length "
+                                      + std::to_string(initialConditions.size())
+                                      + " must equal filter order " 
+                                      + std::to_string(mOrder));
+        } 
+        if (mOrder > 0)
+        {
+            std::copy(initialConditions.begin(), initialConditions.end(),
+                      mInitialConditions.begin());
+        }
     }
     /// Release memory
     void releaseMemory() noexcept
@@ -161,9 +179,10 @@ static_assert(false, "Only IPP FIR filter implemented");
 template<class T>
 FiniteImpulseResponse<T>::FiniteImpulseResponse(
     const UFR::FiniteImpulseResponse<T> &filterCoefficients,
-    const Implementation implementation) :
+    const Implementation implementation,
+    const bool isRealTime) :
     pImpl(std::make_unique<FiniteImpulseResponseImpl>
-             (filterCoefficients, implementation)
+             (filterCoefficients, implementation, isRealTime)
           )
 {
 }
@@ -174,6 +193,20 @@ bool FiniteImpulseResponse<T>::isInitialized() const noexcept
 {
     return pImpl->mInitialized;
 }
+
+/*
+/// Initial conditions
+template<class T>
+void FiniteImpulseResponse<T>::setInitialConditions(
+    const USignal::Vector<T> &initialConditions)
+{
+    if (!isInitialized())
+    {
+        throw std::runtime_error("Class not initialized");
+    }
+    pImpl->setInitialConditions(initialConditions);
+}
+*/
 
 /// Apply
 template<class T>
