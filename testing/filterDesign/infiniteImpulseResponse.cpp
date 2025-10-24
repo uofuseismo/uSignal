@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include "uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp"
+#include "uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -80,4 +81,59 @@ TEMPLATE_TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::BilinearTra
     }
     CHECK(Catch::Approx(digitalGainRef).margin(
              std::numeric_limits<TestType>::epsilon()*100) == digitalGain);
+}
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::butteworth")
+{
+    namespace UAnalogPrototype 
+        = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
+    SECTION("Order 0")
+    {
+        constexpr int order{0};
+        auto zpk = UAnalogPrototype::butterworth(order); 
+        constexpr double gain{1};
+        //REQUIRE(zpk.getOrder() == order);
+        REQUIRE(Catch::Approx(gain).margin(
+                  std::numeric_limits<double>::epsilon()) == gain);
+        REQUIRE(zpk.getZeros().size() == 0);
+        REQUIRE(zpk.getPoles().size() == 1);
+        constexpr std::complex<double> pole{-1 + 0i};
+        REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
+                std::numeric_limits<double>::epsilon());
+    }
+    SECTION("Order 4")
+    {
+        constexpr int order{4};
+        constexpr double gain{1};
+        USignal::Vector<std::complex<double>> polesRef
+        {
+            std::vector<std::complex<double>>
+            {
+               -0.3090169943749474  + 0.95105651629515353i,
+               -0.80901699437494745 + 0.58778525229247303i,
+               -1 + 0i,
+               -0.80901699437494745 + -0.58778525229247303i,
+               -0.30901699437494751 + -0.95105651629515353i
+            }
+        };
+        auto zpk = UAnalogPrototype::butterworth(order);
+        REQUIRE(Catch::Approx(gain).margin(
+                  std::numeric_limits<double>::epsilon()) == gain);
+        REQUIRE(zpk.getZeros().size() == 0);
+        auto poles = zpk.getPoles();
+        REQUIRE(poles.size() == polesRef.size());
+        for (const auto &p : poles)
+        {
+            bool matched{false};
+            for (const auto &pr : polesRef)
+            {
+                if (std::abs(p - pr) < std::numeric_limits<double>::epsilon()*10)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+    }
 }

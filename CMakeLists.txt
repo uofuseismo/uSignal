@@ -71,6 +71,7 @@ set(UTILITIES_SRCS
     src/utilities/math/polynomial.cpp
     src/filterDesign/response.cpp
     src/filterDesign/finiteImpulseResponse/windowBased.cpp
+    src/filterDesign/infiniteImpulseResponse/analogPrototype.cpp
     src/filterDesign/infiniteImpulseResponse/bilinearTransform.cpp
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
@@ -97,6 +98,7 @@ target_sources(libuSignal
                   include/uSignal/version.hpp
                   include/uSignal/system/system.hpp
                   include/uSignal/filterDesign/response.hpp
+                  include/uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp
                   include/uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
