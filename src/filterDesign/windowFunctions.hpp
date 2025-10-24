@@ -10,6 +10,7 @@
 namespace
 {
 
+[[maybe_unused]]
 void hamming(const int length, double *windowIn[])
 {
     double *window = *windowIn;
@@ -47,6 +48,7 @@ void hamming(const int length, double *windowIn[])
 #endif
 }
 
+[[maybe_unused]]
 void hamming(const int length, float *windowIn[])
 {
     float *window = *windowIn;
@@ -85,6 +87,7 @@ void hamming(const int length, float *windowIn[])
 }
 //============================================================================//
 
+[[maybe_unused]]
 void hann(const int length, double *windowIn[])
 {
     double *window = *windowIn;
@@ -123,6 +126,7 @@ void hann(const int length, double *windowIn[])
 #endif
 }
 
+[[maybe_unused]]
 void hann(const int length, float *windowIn[])
 {
     float *window = *windowIn;
@@ -163,6 +167,7 @@ void hann(const int length, float *windowIn[])
 
 //============================================================================//
 
+[[maybe_unused]]
 void bartlett(const int length, double *windowIn[])
 {
     double *window = *windowIn;
@@ -201,6 +206,7 @@ void bartlett(const int length, double *windowIn[])
 #endif
 }
 
+[[maybe_unused]]
 void bartlett(const int length, float *windowIn[])
 {
     float *window = *windowIn;
@@ -242,6 +248,7 @@ void bartlett(const int length, float *windowIn[])
 //============================================================================//
 
 template<typename T>
+[[maybe_unused]]
 void sine(const int length, T *windowIn[])
 {
     T *window = *windowIn;
@@ -271,6 +278,7 @@ void sine(const int length, T *windowIn[])
 
 //============================================================================//
 
+[[maybe_unused]]
 void kaiser(const int length, double *windowIn[], const double beta)
 {
     double *__restrict__ window = *windowIn;
@@ -309,6 +317,7 @@ void kaiser(const int length, double *windowIn[], const double beta)
 #endif
 }
 
+[[maybe_unused]]
 void kaiser(const int length, float *windowIn[], const float beta)
 {
     float *__restrict__ window = *windowIn;
@@ -349,6 +358,7 @@ void kaiser(const int length, float *windowIn[], const float beta)
 
 //============================================================================//
 
+[[maybe_unused]]
 void blackman(const int length, double *windowIn[])
 {
     double *window = *windowIn;
@@ -392,6 +402,7 @@ void blackman(const int length, double *windowIn[])
 #endif
 }
 
+[[maybe_unused]]
 void blackman(const int length, float *windowIn[])
 {
     float *window = *windowIn;

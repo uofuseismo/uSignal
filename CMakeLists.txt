@@ -57,10 +57,7 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/src/private/version.hpp.in
                ${CMAKE_SOURCE_DIR}/include/uSignal/version.hpp)
-set(LIBALL MKL::MKL ${IPP_LIBRARIES})
-set(LIBALL_PYTHON uSignal ${LIBALL} ${PYTHON_LIBRARIES})
 
-#SET(PYTHON_SRC src/modules/wrap.cpp)
 set(UTILITIES_SRCS
     src/system.cpp
     src/vector.cpp
@@ -70,6 +67,7 @@ set(UTILITIES_SRCS
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
     src/filterDesign/response.cpp
+    src/filterDesign/finiteImpulseResponse/hilbertTransformer.cpp
     src/filterDesign/finiteImpulseResponse/windowBased.cpp
     src/filterDesign/infiniteImpulseResponse/analogPrototype.cpp
     src/filterDesign/infiniteImpulseResponse/bilinearTransform.cpp
@@ -98,6 +96,8 @@ target_sources(libuSignal
                   include/uSignal/version.hpp
                   include/uSignal/system/system.hpp
                   include/uSignal/filterDesign/response.hpp
+                  include/uSignal/filterDesign/finiteImpulseResponse/hilbertTransformer.hpp
+                  include/uSignal/filterDesign/finiteImpulseResponse/windowBased.hpp
                   include/uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp
                   include/uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
