@@ -296,6 +296,15 @@ void kaiser(const int length, double *windowIn[], const double beta)
         window[0] = 1;
         return;
     }
+    double alpha = static_cast<double> (length - 1)/2;
+    double i0betai = 1.0/std::cyl_bessel_i(0, beta);
+    for (int i = 0; i < length; i++)
+    {
+        double argSqrt = 1 - std::pow((i - alpha)/alpha, 2); 
+        double arg = beta*std::sqrt(argSqrt);
+        window[i] = std::abs(std::cyl_bessel_i(0, arg)*i0betai);
+    }
+/*
 #ifdef WITH_IPP
     double alpha = (2*beta)/static_cast<double> (length - 1);
     ippsSet_64f(1, window, length);
@@ -315,6 +324,7 @@ void kaiser(const int length, double *windowIn[], const double beta)
         window[i] = std::abs(std::cyl_bessel_i(0, arg)*i0betai);
     }
 #endif
+*/
 }
 
 [[maybe_unused]]

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include "uSignal/filterDesign/finiteImpulseResponse/windowBased.hpp"
+#include "uSignal/filterDesign/finiteImpulseResponse/hilbertTransformer.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
@@ -151,5 +152,106 @@ TEMPLATE_TEST_CASE(
              REQUIRE(std::abs(bs.at(i) - ref.at(i)) < 1.e-7);
         }
     }   
+}
+
+TEMPLATE_TEST_CASE(
+    "CoreTest::FilterDesign::FiniteImpulseResponse::hilbertTransformer",
+    "[TypeName][template]",
+    double)
+{
+    TestType tol{std::numeric_limits<float>::epsilon()*10};
+    if constexpr (std::is_same<TestType, double>::value)
+    {
+        tol = std::numeric_limits<double>::epsilon()*100;
+    } 
+
+    namespace UFIRFilterDesign = USignal::FilterDesign::FiniteImpulseResponse;
+    SECTION("Order 0")
+    {
+        constexpr int order{0};
+        constexpr double beta{8};
+        auto firFilter
+            = UFIRFilterDesign::hilbertTransformer<TestType> (order, beta);
+        auto taps = firFilter.getFilterCoefficients();
+        REQUIRE(taps.size() == 1);
+        REQUIRE(std::abs(taps.at(0) - std::complex<TestType> (1, 0)) < tol);
+    }
+    SECTION("Order 16")
+    {
+        USignal::Vector<std::complex<TestType>> ref
+        ( 
+            std::vector<std::complex<TestType>>
+                                   {0 + -0.000000000000000i,
+                                    0 + -0.002154949073886i,
+                                    0 + -0.000000000000000i,
+                                    0 + -0.025048021740503i,
+                                    0 + -0.000000000000000i,
+                                    0 + -0.123110554263836i,
+                                    0 + -0.000000000000000i,
+                                    0 + -0.600346453738133i,
+                                    1 +  0i,
+                                    0 +  0.600346453738133i,
+                                    0 +  0.000000000000000i,
+                                    0 +  0.123110554263836i,
+                                    0 +  0.000000000000000i,
+                                    0 +  0.025048021740503i,
+                                    0 +  0.000000000000000i,
+                                    0 +  0.002154949073886i,
+                                    0 +  0.000000000000000}
+        );
+        constexpr int order{16};
+        constexpr double beta{8};
+        auto firFilter
+            = UFIRFilterDesign::hilbertTransformer<TestType> (order, beta);
+        auto bs = firFilter.getFilterCoefficients();
+        REQUIRE(ref.size() == bs.size());
+        for (int i = 0; i < static_cast<int> (ref.size()); ++i)
+        {
+            auto residual = std::abs(ref.at(i) - bs.at(i));
+            CHECK(residual < tol);
+        }
+    }
+    SECTION("Order 19")
+    {
+        USignal::Vector<std::complex<TestType>> ref 
+        (
+            std::vector<std::complex<TestType>>
+                                   {
+                                      -0.000078362668030 + -0.000078362668030i,
+                                       0.000687065652501 + -0.000687065652501i,
+                                      -0.002495774178985 + -0.002495774178985i,
+                                       0.006621258126556 + -0.006621258126556i,
+                                      -0.014693594258722 + -0.014693594258722i,
+                                       0.029092392815675 + -0.029092392815675i,
+                                      -0.053803945082584 + -0.053803945082584i,
+                                       0.097839237445465 + -0.097839237445464i,
+                                      -0.193197503788858 + -0.193197503788858i,
+                                       0.630029225936982 + -0.630029225936981i,
+                                       0.630029225936982 +  0.630029225936981i,
+                                      -0.193197503788858 +  0.193197503788858i,
+                                       0.097839237445465 +  0.097839237445464i,
+                                      -0.053803945082584 +  0.053803945082584i,
+                                       0.029092392815675 +  0.029092392815675i,
+                                      -0.014693594258722 +  0.014693594258722i,
+                                       0.006621258126556 +  0.006621258126556i,
+                                      -0.002495774178985 +  0.002495774178985i,
+                                       0.000687065652501 +  0.000687065652501i,
+                                      -0.000078362668030 +  0.000078362668030i
+                                   }
+        );
+        constexpr int order{19};
+        constexpr double beta{8};
+        auto firFilter
+            = UFIRFilterDesign::hilbertTransformer<TestType> (order, beta);
+        auto bs = firFilter.getFilterCoefficients();
+        REQUIRE(ref.size() == bs.size());
+        for (int i = 0; i < static_cast<int> (ref.size()); ++i)
+        {
+            auto residual = std::abs(ref.at(i) - bs.at(i));
+            CHECK(residual < tol);
+        }
+
+    }
+    
 }
 
