@@ -7,7 +7,7 @@
 namespace USignal::Transforms::Fourier
 {
 
-class ForwardParameters
+class ForwardOptions
 {
 public:
     /// @brief Defines the Fourier transform implementation.
@@ -20,18 +20,18 @@ public:
     };
 public:
     /// @brief Constructor.
-    ForwardParameters();
+    ForwardOptions();
     /// @brief Constructor with an implementation.
-    explicit ForwardParameters(Implementation implementation);
+    explicit ForwardOptions(Implementation implementation);
     /// @brief Copy constructor.
-    /// @param[in] parameters  The parameters from which to initialize this
+    /// @param[in] options  The parameters from which to initialize this
     ///                        class.
-    ForwardParameters(const ForwardParameters &parameters);
+    ForwardOptions(const ForwardOptions &options);
     /// @brief Move constructor.
-    /// @param[in,out] parameters  The parameters from which to initialize this
-    ///                            class.  On exit, parameters's behavior is
+    /// @param[in,out] options  The parameters from which to initialize this
+    ///                            class.  On exit, options's behavior is
     ///                            undefined.
-    ForwardParameters(ForwardParameters &&parameters) noexcept;
+    ForwardOptions(ForwardOptions &&options) noexcept;
 
     /// @brief Defines the implementation.
     void setImplementation(Implementation implementation) noexcept;
@@ -39,21 +39,21 @@ public:
     [[nodiscard]] Implementation getImplementation() const noexcept;
 
     /// @brief Copy assignment.
-    /// @param[in] parameters  The forward parameters to copy to this.
-    /// @result A deep copy of the forward transform parameters.
-    ForwardParameters& operator=(const ForwardParameters &parameters);
+    /// @param[in] options  The forward parameters to copy to this.
+    /// @result A deep copy of the forward transform options.
+    ForwardOptions& operator=(const ForwardOptions &options);
     /// @brief Move assignment.
-    /// @param[in,out] parameters  The forward parameters whose memory will be
-    ///                            moved this.  On exit, parameters's behavior
+    /// @param[in,out] options  The forward parameters whose memory will be
+    ///                            moved this.  On exit, options's behavior
     ///                            is undefined.
-    /// @result The memory from parameters moved to this.
-    ForwardParameters& operator=(ForwardParameters &&parameters) noexcept;
+    /// @result The memory from options moved to this.
+    ForwardOptions& operator=(ForwardOptions &&options) noexcept;
 
     /// @brief Destructor.
-    ~ForwardParameters(); 
+    ~ForwardOptions(); 
 private:
-    class ForwardParametersImpl;
-    std::unique_ptr<ForwardParametersImpl> pImpl;
+    class ForwardOptionsImpl;
+    std::unique_ptr<ForwardOptionsImpl> pImpl;
 };
 
 /// @class Forward "forward.hpp"
@@ -66,11 +66,13 @@ class Forward final : public USignal::System::ISystem<T, std::complex<T>>
 {
 public:
     /// @brief Initializes the forward Fourier transformer.
-    explicit Forward(const ForwardParameters &parameters);
+    /// @param[in] options  The options influencing the transform calculation.
+    explicit Forward(const ForwardOptions &options);
  
     /// @result True indicates the class is initialized.
     [[nodiscard]] bool isInitialized() const noexcept override;
 
+    /// @brief Computes the Fourier tarnsform of the input signal.
     void apply() override;
 
     /// @brief Destructor.

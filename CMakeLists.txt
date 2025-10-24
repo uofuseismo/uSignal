@@ -116,8 +116,9 @@ if (${MKL_FOUND})
    target_compile_definitions(libuSignal PRIVATE WITH_MKL)
 endif()
 target_include_directories(libuSignal
-                           PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-                           PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>)
+                           PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+                           PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+                           PUBLIC  $<INSTALL_INTERFACE:/install>)
 target_link_libraries(libuSignal
                       PUBLIC OpenMP::OpenMP_CXX
                       PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers Threads::Threads)
@@ -164,12 +165,12 @@ add_test(NAME coreTests
 file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
 #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
 
-#add_executable(digitalApproximation modules/digitalApproximation.cpp)
-#set_target_properties(digitalApproximation PROPERTIES
-#                      CXX_STANDARD 20
-#                      CXX_STANDARD_REQUIRED YES 
-#                      CXX_EXTENSIONS NO) 
-#target_link_libraries(digitalApproximation PRIVATE uSignal::libuSignal)
+add_executable(digitalApproximation modules/digitalApproximation.cpp)
+set_target_properties(digitalApproximation PROPERTIES
+                      CXX_STANDARD 20
+                      CXX_STANDARD_REQUIRED YES 
+                      CXX_EXTENSIONS NO) 
+target_link_libraries(digitalApproximation PRIVATE uSignal::libuSignal)
 
 #========================================================================================#
 #                                      Installation                                      #
@@ -195,7 +196,7 @@ export(EXPORT ${PROJECT_NAME}-targets
        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 install(EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}Targets.cmake
-        NAMESPACE uSignal::
+        NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake

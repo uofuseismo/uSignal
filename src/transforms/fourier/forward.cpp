@@ -120,8 +120,8 @@ template<class T>
 class Forward<T>::ForwardImpl
 {
 public:
-    explicit ForwardImpl(const ForwardParameters &parameters) :
-        mParameters(parameters)
+    explicit ForwardImpl(const ForwardOptions &options) :
+        mOptions(options)
     {
         mInitialized = true;
     }
@@ -146,8 +146,8 @@ public:
     }
     void initialize(const int signalLength)
     {
-        auto doFFT = mParameters.getImplementation()
-                     == ForwardParameters::Implementation::Fast ?
+        auto doFFT = mOptions.getImplementation()
+                     == ForwardOptions::Implementation::Fast ?
                         true : false;
         int order{-1};
         auto orderWork
@@ -404,7 +404,7 @@ public:
         return mTransformLength;
     }
 //private:
-    ForwardParameters mParameters;
+    ForwardOptions mOptions;
     IppsFFTSpec_R_64f *mFFTSpec64f{nullptr};
     IppsDFTSpec_R_64f *mDFTSpec64f{nullptr};
     IppsFFTSpec_R_32f *mFFTSpec32f{nullptr};
@@ -420,8 +420,8 @@ public:
 
 /// Constructor
 template<typename T>
-Forward<T>::Forward(const ForwardParameters &parameters) :
-    pImpl(std::make_unique<ForwardImpl> (parameters))
+Forward<T>::Forward(const ForwardOptions &options) :
+    pImpl(std::make_unique<ForwardImpl> (options))
 {
 }
 
@@ -453,74 +453,74 @@ template<typename T>
 Forward<T>::~Forward() = default;
 
 ///--------------------------------------------------------------------------///
-///                                    Parameters                            ///
+///                                    Options                            ///
 ///--------------------------------------------------------------------------///
 
-class ForwardParameters::ForwardParametersImpl
+class ForwardOptions::ForwardOptionsImpl
 {
 public:
-    ForwardParameters::Implementation
-       mImplementation{ForwardParameters::Implementation::Discrete};
+    ForwardOptions::Implementation
+       mImplementation{ForwardOptions::Implementation::Discrete};
 };
 
 /// Constructor
-ForwardParameters::ForwardParameters() :
-    pImpl(std::make_unique<ForwardParametersImpl> ())
+ForwardOptions::ForwardOptions() :
+    pImpl(std::make_unique<ForwardOptionsImpl> ())
 {
 }
 
 /// Copy constructor
-ForwardParameters::ForwardParameters(const ForwardParameters &parameters)
+ForwardOptions::ForwardOptions(const ForwardOptions &options)
 {
-    *this = parameters;
+    *this = options;
 }
 
 /// Move constructor
-ForwardParameters::ForwardParameters(ForwardParameters &&parameters) noexcept
+ForwardOptions::ForwardOptions(ForwardOptions &&options) noexcept
 {
-    *this = std::move(parameters);
+    *this = std::move(options);
 }
 
 /// Constructor
-ForwardParameters::ForwardParameters(const Implementation implementation) :
-    pImpl(std::make_unique<ForwardParametersImpl> ())
+ForwardOptions::ForwardOptions(const Implementation implementation) :
+    pImpl(std::make_unique<ForwardOptionsImpl> ())
 {
     setImplementation(implementation);
 }
 
 /// Copy assignment
-ForwardParameters&
-ForwardParameters::operator=(const ForwardParameters &parameters)
+ForwardOptions&
+ForwardOptions::operator=(const ForwardOptions &options)
 {
-    if (&parameters == this){return *this;}
-    pImpl = std::make_unique<ForwardParametersImpl> (*parameters.pImpl);
+    if (&options == this){return *this;}
+    pImpl = std::make_unique<ForwardOptionsImpl> (*options.pImpl);
     return *this;
 }
 
 /// Move assignment
-ForwardParameters&
-ForwardParameters::operator=(ForwardParameters &&parameters) noexcept
+ForwardOptions&
+ForwardOptions::operator=(ForwardOptions &&options) noexcept
 {
-    if (&parameters == this){return *this;}
-    pImpl = std::move(parameters.pImpl);
+    if (&options == this){return *this;}
+    pImpl = std::move(options.pImpl);
     return *this;
 }
 
 /// Implementation
-void ForwardParameters::setImplementation(
+void ForwardOptions::setImplementation(
     const Implementation implementation) noexcept
 {
     pImpl->mImplementation = implementation;
 }
 
-ForwardParameters::Implementation
-ForwardParameters::getImplementation() const noexcept
+ForwardOptions::Implementation
+ForwardOptions::getImplementation() const noexcept
 {
     return pImpl->mImplementation;
 }
 
 /// Destructor
-ForwardParameters::~ForwardParameters() = default;
+ForwardOptions::~ForwardOptions() = default;
 
 ///--------------------------------------------------------------------------///
 ///                           Template Instantiation                         ///
