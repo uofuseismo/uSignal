@@ -139,6 +139,7 @@ add_executable(coreTests
                testing/filterRepresentations/secondOrderSections.cpp
                testing/utilities/math.cpp
                testing/filterDesign/response.cpp
+               testing/filterDesign/finiteImpulseResponse.cpp
                testing/filterDesign/infiniteImpulseResponse.cpp
                testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp

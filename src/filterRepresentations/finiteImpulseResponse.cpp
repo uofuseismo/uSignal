@@ -1,3 +1,4 @@
+#include <iostream>
 #include <complex>
 #include "uSignal/filterRepresentations/finiteImpulseResponse.hpp"
 #include "uSignal/vector.hpp"
@@ -21,9 +22,29 @@ FiniteImpulseResponse<T>::FiniteImpulseResponse(
     {
         throw std::invalid_argument("The filter coefficients are empty");
     }
+    bool allZero{true};
+    for (const auto &b : filterCoefficients)
+    {
+        if (b != zero)
+        {
+            allZero = false;
+            break;
+        }
+    }
+    if (allZero)
+    {   
+        pImpl = nullptr;
+        throw std::runtime_error("The filter coefficients are all zero");
+    }
     pImpl = std::make_unique<FiniteImpulseResponseImpl> ();
     pImpl->mFilterCoefficients = filterCoefficients;
+/*
     int nCoefficients = static_cast<int> (pImpl->mFilterCoefficients.size());
+    for (int i = 0; i < nCoefficients; ++i)
+    {
+        if (pImpl->mFilterCoefficients.at(i) != zero){break;}
+        pImpl->mFilterCoefficients.pop_front();
+    }
     for (int i = nCoefficients - 1; i >= 0; --i)
     {
         if (pImpl->mFilterCoefficients.at(i) != zero){break;}
@@ -34,6 +55,7 @@ FiniteImpulseResponse<T>::FiniteImpulseResponse(
         pImpl = nullptr;
         throw std::runtime_error("The filter coefficients are all zero");
     }
+*/
 }
 
 /// Copy constructor

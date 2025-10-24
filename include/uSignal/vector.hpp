@@ -57,6 +57,8 @@ public:
     [[nodiscard]] T *data() noexcept;
     /// @result A pointer to the internal memory array.
     [[nodiscard]] const T *data() const noexcept;
+    /// @brief Removes the first element in the vector.
+    void pop_front();
     /// @brief Removes the last element in the vector.
     void pop_back();
     /// @brief Adds a new element at the end of the vector.

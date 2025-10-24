@@ -142,6 +142,15 @@ bool Vector<T>::empty() const noexcept
     return pImpl->mX.empty();
 }
 
+/// Pop front
+template<class T>
+void Vector<T>::pop_front()
+{
+    // Awkward but I want to keep that memory alignment
+    std::shift_left(pImpl->mX.begin(), pImpl->mX.end(), 1);
+    pImpl->mX.pop_back();
+}
+
 /// Pop back
 template<class T>
 void Vector<T>::pop_back()
