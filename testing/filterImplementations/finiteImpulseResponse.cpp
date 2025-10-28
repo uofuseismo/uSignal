@@ -21,7 +21,7 @@ using namespace USignal;
 
 TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::FiniteImpulseResponse",
                    "[TypeName][template]",
-                   double)
+                   double, float)
 {
     std::filesystem::path dataDirectory{"data"};
     std::filesystem::path inputSignalFileName{dataDirectory/"gse2.txt"};
@@ -80,7 +80,14 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::FiniteImpulseResponse",
 
         REQUIRE(outputSignal.size() == yRef.size());
         auto l8Norm = ::computeInfinityNorm(yRef, outputSignal);
-        REQUIRE(l8Norm < 1.e-12);
+        if constexpr (std::is_same<TestType, double>::value)
+        {
+            REQUIRE(l8Norm < 1.e-12);
+        }
+        else
+        {
+            REQUIRE(l8Norm < 5.e-4);
+        }
     }
 
     SECTION("Real-Time")
@@ -157,7 +164,14 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::FiniteImpulseResponse",
                   << elapsedTime << std::endl;
         REQUIRE(outputSignal.size() == yRef.size());
         auto l8Norm = ::computeInfinityNorm(yRef, outputSignal);
-        REQUIRE(l8Norm < 1.e-12);
-
+        //REQUIRE(l8Norm < 1.e-12);
+        if constexpr (std::is_same<TestType, double>::value)
+        {
+            REQUIRE(l8Norm < 1.e-12);
+        }   
+        else
+        {   
+            REQUIRE(l8Norm < 5.e-4);
+        }   
     }
 }
