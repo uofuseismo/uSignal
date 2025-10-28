@@ -78,7 +78,8 @@ set(UTILITIES_SRCS
     src/filterImplementations/finiteImpulseResponse.cpp
     src/filterImplementations/secondOrderSections.cpp
     src/filterImplementations/transposeDirectForm2.cpp
-    src/transforms/fourier/forward.cpp)
+    src/transforms/fourier/forward.cpp
+    src/transforms/hilbert/finiteImpulseResponse.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
 if (${BUILD_SHARED_LIBS})
@@ -107,6 +108,7 @@ target_sources(libuSignal
                   include/uSignal/filterImplementations/secondOrderSections.hpp
                   include/uSignal/filterImplementations/transposeDirectForm2.hpp
                   include/uSignal/transforms/fourier/forward.hpp
+                  include/uSignal/transforms/hilbert/finiteImpulseResponse.hpp
                   include/uSignal/demean.hpp
                   include/uSignal/detrend.hpp
                   include/uSignal/taper.hpp
@@ -168,12 +170,12 @@ add_test(NAME coreTests
 file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
 #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
 
-add_executable(digitalApproximation modules/digitalApproximation.cpp)
-set_target_properties(digitalApproximation PROPERTIES
-                      CXX_STANDARD 20
-                      CXX_STANDARD_REQUIRED YES 
-                      CXX_EXTENSIONS NO) 
-target_link_libraries(digitalApproximation PRIVATE uSignal::libuSignal)
+#add_executable(digitalApproximation modules/digitalApproximation.cpp)
+#set_target_properties(digitalApproximation PROPERTIES
+#                      CXX_STANDARD 20
+#                      CXX_STANDARD_REQUIRED YES 
+#                      CXX_EXTENSIONS NO) 
+#target_link_libraries(digitalApproximation PRIVATE uSignal::libuSignal)
 
 #========================================================================================#
 #                                      Installation                                      #
