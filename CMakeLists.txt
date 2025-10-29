@@ -57,7 +57,6 @@ endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/src/private/version.hpp.in
                ${CMAKE_SOURCE_DIR}/include/uSignal/version.hpp)
-
 set(UTILITIES_SRCS
     src/system.cpp
     src/vector.cpp
@@ -82,11 +81,12 @@ set(UTILITIES_SRCS
     src/transforms/hilbert/finiteImpulseResponse.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
-if (${BUILD_SHARED_LIBS})
+#if (${BUILD_SHARED_LIBS})
    add_library(libuSignal SHARED ${SRCS})
-else()
-   add_library(libuSignal STATIC ${SRCS})
-endif()
+#else()
+#   add_library(libuSignal STATIC ${SRCS})
+#   set_target_properties(libuSignal PROPERTIES POSITION_INDEPENDENT_CODE FALSE)
+#endif()
 add_library(uSignal::libuSignal ALIAS libuSignal)
 target_sources(libuSignal
                PUBLIC

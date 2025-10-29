@@ -4,6 +4,7 @@
 #include <vector>
 #include "uSignal/filterDesign/response.hpp"
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
+#include "uSignal/filterRepresentations/finiteImpulseResponse.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
@@ -170,5 +171,37 @@ TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalResponse",
         CHECK(Catch::Approx(0).margin(
                  std::numeric_limits<TestType>::epsilon()*100) == residual);
     }   
+}
+
+TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalResponse::FIR",
+                   "[TypeName][template]",
+                   double, float)
+{
+    Vector<TestType> bz( 
+        std::vector<TestType> {1, -1, 2, -2, 3, -2, 2, -1, 1} );
+    Vector<TestType> az( 
+        std::vector<TestType> {1.000000000000000} );
+    int nFrequencies{41};
+    const double df = (M_PI - 0)/static_cast<double> (nFrequencies - 1);
+    USignal::Vector<TestType> frequencies(nFrequencies);
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        frequencies[i] = static_cast<TestType> (0 + static_cast<double> (i)*df);
+    }
+    // Make a reference (feedback coeff is 1 so this is really an fir filter)
+    USignal::FilterRepresentations::InfiniteImpulseResponse iir{bz, az};
+    auto hRef
+         = USignal::FilterDesign::Response::computeDigital(iir, frequencies);
+    // Make the real thing
+    USignal::FilterRepresentations::FiniteImpulseResponse fir{bz};
+    auto h
+         = USignal::FilterDesign::Response::computeDigital(fir, frequencies);
+    REQUIRE(h.size() == hRef.size());
+    for (size_t i = 0; i < hRef.size(); ++i)
+    {
+        TestType residual = std::abs(hRef.at(i) - h.at(i));
+        CHECK(Catch::Approx(0).margin(
+                 std::numeric_limits<TestType>::epsilon()*100) == residual);
+    }
 }
 

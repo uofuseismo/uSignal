@@ -82,6 +82,36 @@ void computeTransferFunction(
                    std::divides< std::complex<T> > ());
 }
 
+template<typename T>
+void computeTransferFunction(
+    const USignal::Vector<std::complex<T>> &numeratorCoefficients,
+    const USignal::Vector<std::complex<T>> &abscissa,
+    USignal::Vector<std::complex<T>> *response)
+{
+#ifndef NDEBUG
+    assert(hNumerator.size() == hDenominator.size());
+    assert(response != nullptr);
+#endif
+    // Evaluate the numerator polynomial
+    auto hNumerator
+        = USignal::Utilities::Math::Polynomial::evaluate(
+            numeratorCoefficients, abscissa);
+    // Compute the transfer function
+    if (response->size() != hNumerator.size())
+    {
+        response->resize(hNumerator.size());
+    }
+    response->resize(hNumerator.size());
+#ifndef NDEBUG
+    assert(hsNumerator.size() == response.size());
+#endif
+    const auto hnPtr = std::assume_aligned<ALIGNMENT> (hNumerator.data());
+    auto rPtr = std::assume_aligned<ALIGNMENT> (response->data());
+    std::copy(std::execution::unseq,
+               hnPtr, hnPtr + hNumerator.size(), 
+               rPtr);
+}
+
 }
 
 
@@ -203,6 +233,41 @@ USignal::FilterDesign::Response::computeDigital(
     return response;
 }
 
+template<typename T>
+USignal::Vector<std::complex<T>>
+USignal::FilterDesign::Response::computeDigital(
+   const USignal::FilterRepresentations::FiniteImpulseResponse<T> &filter,
+   const USignal::Vector<T> &frequencies)
+{
+    USignal::Vector<std::complex<T>> response;
+    if (frequencies.empty()){return response;}
+    // Get numerator and denominator coefficients
+    const auto &numeratorCoefficients
+        = filter.getFilterCoefficientsReference();
+    // Copy numerators in reverse order for consistency with
+    // evaluatePolynomial and then compute z.  The evaluatePolynomial convention
+    // requires us to compute z=e^{-i\omega} to compensate.  
+    // Normally, this is would be z^{i \omega}.
+    auto reversedComplexNumeratorCoefficients
+        = ::makeComplexAndReverse(numeratorCoefficients);
+    // Now compute z = exp(-i w) = cos(w) - i sin(w)
+    auto nFrequencies = static_cast<int> (frequencies.size());
+    USignal::Vector<std::complex<T>> z(nFrequencies);
+    auto zPtr = std::assume_aligned<ALIGNMENT> (z.data());
+    const auto frequenciesPtr
+        = std::assume_aligned<ALIGNMENT> (frequencies.data());
+    for (int i = 0; i < nFrequencies; ++i)
+    {   
+        const T w{frequenciesPtr[i]};
+        zPtr[i] = std::complex<T> (std::cos(w), -std::sin(w));
+    }   
+    // Now compute the transfer function
+    ::computeTransferFunction(reversedComplexNumeratorCoefficients,
+                              z,
+                              &response);
+    return response;
+}
+
 ///--------------------------------------------------------------------------///
 ///                             Instantiation                                ///
 ///--------------------------------------------------------------------------///
@@ -224,5 +289,14 @@ USignal::FilterDesign::Response::computeDigital(
 template USignal::Vector<std::complex<float>>
 USignal::FilterDesign::Response::computeDigital(
     const USignal::FilterRepresentations::InfiniteImpulseResponse<float> &,
+    const USignal::Vector<float> &); 
+
+template USignal::Vector<std::complex<double>>
+USignal::FilterDesign::Response::computeDigital(
+    const USignal::FilterRepresentations::FiniteImpulseResponse<double> &,
+    const USignal::Vector<double> &); 
+template USignal::Vector<std::complex<float>>
+USignal::FilterDesign::Response::computeDigital(
+    const USignal::FilterRepresentations::FiniteImpulseResponse<float> &,
     const USignal::Vector<float> &); 
 
