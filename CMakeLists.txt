@@ -3,15 +3,15 @@ project(uSignal VERSION 0.1.0 LANGUAGES CXX)
 enable_testing()
 
 # Some options
-option(WRAP_PYTHON "Compile the Python bindings" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+#option(WRAP_PYTHON "Compile the Python bindings" OFF)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 include(CheckCXXCompilerFlag)
 
-if (${WRAP_PYTHON})
-   message("Will build Python bindings")
-   find_package(pybind11 REQUIRED)
-endif()
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+#if (${WRAP_PYTHON})
+#   message("Will build Python bindings")
+#   find_package(pybind11 REQUIRED)
+#endif()
 find_package(Catch2 3 REQUIRED)
 find_package(IPP)
 find_package(Boost COMPONENTS headers REQUIRED)
@@ -148,6 +148,7 @@ add_executable(coreTests
                testing/filterImplementations/finiteImpulseResponse.cpp
                testing/filterImplementations/infiniteImpulseResponse.cpp
                testing/transforms/fourier.cpp
+               testing/transforms/hilbert.cpp
                testing/utilities/demean.cpp
                testing/utilities/window.cpp
                testing/utilities/taper.cpp

@@ -38,10 +38,13 @@ public:
     ///        is assumed to be at rest - i.e., all 0.
     /// @throws std::invalid_argument if initialConditions.size() does not
     ///         equal the filter order.
-    //void setInitialConditions(const USignal::Vector<T> &initialConditions);
+    void setInitialConditions(const USignal::Vector<T> &initialConditions);
 
     /// @brief Filters the signal.
     void apply() final;
+
+    /// @brief Resets the delay lines to the initial conditions.
+    void resetInitialConditions();
 
     /// @brief Destructor.
     ~FiniteImpulseResponse() override;

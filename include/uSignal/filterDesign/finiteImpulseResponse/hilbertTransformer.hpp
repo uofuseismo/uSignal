@@ -1,5 +1,6 @@
 #ifndef USIGNAL_FILTER_DESIGN_FINITE_IMPULSE_RESPONSE_HILBERT_TRANSFORMER_HPP
 #define USIGNAL_FILTER_DESIGN_FINITE_IMPULSE_RESPONSE_HILBERT_TRANSFORMER_HPP
+#include <complex>
 #include <uSignal/filterRepresentations/finiteImpulseResponse.hpp>
 
 namespace USignal::FilterDesign::FiniteImpulseResponse

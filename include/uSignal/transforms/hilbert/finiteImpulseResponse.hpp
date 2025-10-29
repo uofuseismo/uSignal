@@ -64,11 +64,30 @@ template<class T>
 class FiniteImpulseResponse final : public USignal::System::ISystem<T, std::complex<T>>
 {
 public:
-    explicit FiniteImpulseResponse(const FiniteImpulseResponseOptions &options);
+    explicit FiniteImpulseResponse(const FiniteImpulseResponseOptions &options,
+                                   bool isRealTime = false);
+
+    /// @brief Indicates the class is ready to transform signals.
+    [[nodiscard]] bool isInitialized() const noexcept final;
+
+    /// @brief Sets the filter's initial conditions.
+    /// @throws std::invalid_argument if the length of the initial conditions is
+    ///         not the same as the length in the filter order.
+    void setInitialConditions(const USignal::Vector<T> &initialConditions);
+
+    /// @brief Transforms the signal.
+    void apply() final;
+
+    /// @brief Resets the filter's initial conditions to those provided in
+    ///        \c setInitialConditions().
+    void resetInitialConditions();
  
     /// @brief Destructor.
     ~FiniteImpulseResponse() override;
     FiniteImpulseResponse() = delete;
+ 
+    FiniteImpulseResponse(const FiniteImpulseResponse &) = delete;
+    FiniteImpulseResponse(FiniteImpulseResponse &&) noexcept = delete;
 private:
     class FiniteImpulseResponseImpl;
     std::unique_ptr<FiniteImpulseResponseImpl> pImpl;

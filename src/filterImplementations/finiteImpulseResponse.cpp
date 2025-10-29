@@ -204,7 +204,7 @@ public:
     /// Reset initial conditions
     void resetInitialConditions() noexcept
     {
-        if (mOrder > 0)
+        if (mIsRealTime && mOrder > 0)
         {
             if constexpr (std::is_same<T, double>::value)
             {
@@ -313,7 +313,6 @@ bool FiniteImpulseResponse<T>::isInitialized() const noexcept
     return pImpl->mInitialized;
 }
 
-/*
 /// Initial conditions
 template<class T>
 void FiniteImpulseResponse<T>::setInitialConditions(
@@ -325,7 +324,17 @@ void FiniteImpulseResponse<T>::setInitialConditions(
     }
     pImpl->setInitialConditions(initialConditions);
 }
-*/
+
+/// Reset the initial conditions
+template<class T>
+void FiniteImpulseResponse<T>::resetInitialConditions()
+{
+    if (!isInitialized())
+    {
+        throw std::runtime_error("Class not initialized");
+    }   
+    pImpl->resetInitialConditions();
+}
 
 /// Apply
 template<class T>
