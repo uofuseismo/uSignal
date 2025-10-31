@@ -203,10 +203,10 @@ public:
         if (doFFT)
         {
             ::getFFTSize<T>(&specSize,
-                         &specBufferSize, // Init only
-                          &bufferSize,
-                          order,
-                          ippAlgHintNone);
+                            &specBufferSize, // Init only
+                            &bufferSize,
+                            order,
+                            ippAlgHintNone);
             mFFTSpec64f = nullptr;
             Ipp8u *pSpecBuffer = ippsMalloc_8u(specBufferSize);
             Ipp8u *pSpec = ippsMalloc_8u(specSize);

@@ -137,3 +137,204 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::but
         }
     }
 }
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::chebyshevI")
+{
+    namespace UAnalogPrototype 
+        = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
+    SECTION("Order 0")
+    {
+        const int order{0};
+        const double ripple{2.2};
+        auto zpk = UAnalogPrototype::chebyshevTypeI(order, ripple);
+        REQUIRE(zpk.getZeros().size() == 0);
+        REQUIRE(zpk.getPoles().size() == 1);
+        constexpr std::complex<double> pole{-1.2313003041963828 + 0i};
+        constexpr double gainRef{1.2313003041963828};
+        REQUIRE(std::abs(zpk.getGain() - gainRef) <
+                std::numeric_limits<double>::epsilon()*100);
+        REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
+                std::numeric_limits<double>::epsilon()*100);
+    }
+    SECTION("Order 5")
+    {
+        const int order{5};
+        const double ripple{0.994};
+        auto zpk = UAnalogPrototype::chebyshevTypeI(order, ripple);
+        USignal::Vector<std::complex<double>> polesRef
+        {
+            std::vector<std::complex<double>>
+            {
+                -0.062314231644038744 + 0.9935274525619241i,
+                -0.17024564688613014  + 0.72731257398980598i,
+                -0.23255987853016891  + 0.26621487857211812i,
+                -0.23255987853016891  +-0.26621487857211795i,
+                -0.17024564688613017  +-0.72731257398980587i,
+                -0.062314231644038813 +-0.99352745256192398i
+            }
+        };
+        constexpr double gainRef{0.061620501119488615};
+        REQUIRE(zpk.getZeros().size() == 0); 
+        auto poles = zpk.getPoles();
+        REQUIRE(poles.size() == polesRef.size()); 
+        REQUIRE(std::abs(zpk.getGain() - gainRef) <
+                std::numeric_limits<double>::epsilon()*100);
+        REQUIRE(poles.size() == polesRef.size());
+        for (const auto &p : poles)
+        {
+            bool matched{false};
+            for (const auto &pr : polesRef)
+            {
+                if (std::abs(p - pr) < std::numeric_limits<double>::epsilon()*10)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+    }
+}
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::chebyshevII")
+{
+    namespace UAnalogPrototype 
+        = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
+    SECTION("Order 0")
+    {   
+        const int order{0};
+        constexpr double ripple{1.1};
+        auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
+        REQUIRE(zpk.getZeros().size() == 0);
+        REQUIRE(zpk.getPoles().size() == 1);
+        constexpr std::complex<double> pole{-1.862583192806328 + 0i};
+        constexpr double gainRef{1.862583192806328};
+        REQUIRE(std::abs(zpk.getGain() - gainRef) <
+                std::numeric_limits<double>::epsilon()*100);
+        REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
+                std::numeric_limits<double>::epsilon()*100);
+    }
+    SECTION("Order 2")
+    {
+        const int order{2};
+        constexpr double ripple{1.2};
+        auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
+        REQUIRE(zpk.getZeros().size() == 2);
+        REQUIRE(zpk.getPoles().size() == 3); 
+        constexpr double gainRef{5.317805523446352};
+        REQUIRE(std::abs(zpk.getGain() - gainRef) <
+                std::numeric_limits<double>::epsilon()*100);
+        USignal::Vector<std::complex<double>> zerosRef
+        {
+            std::vector<std::complex<double>>
+            {
+                -1.1547005383792517i,
+                 1.1547005383792517i,
+            }
+        };
+        USignal::Vector<std::complex<double>> polesRef
+        {
+            std::vector<std::complex<double>>
+            {
+                -0.11517150279344834-1.1245944747171477i,
+                -5.548148529033251+0i,
+                -0.11517150279344834+1.1245944747171477i
+            }
+        };
+        auto zeros = zpk.getZeros();
+        REQUIRE(zeros.size() == zerosRef.size());
+        for (const auto &z : zeros)
+        {
+            bool matched{false};
+            for (const auto &zr : zerosRef)
+            {
+                if (std::abs(z - zr) < std::numeric_limits<double>::epsilon()*10)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+        auto poles = zpk.getPoles();
+        REQUIRE(poles.size() == polesRef.size());
+        for (const auto &p : poles)
+        {
+            bool matched{false};
+            for (const auto &pr : polesRef)
+            {
+                if (std::abs(p - pr) < std::numeric_limits<double>::epsilon()*10)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+    }
+    SECTION("Order 5")
+    {
+        const int order{5};
+        constexpr double ripple{1.2};
+        auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
+        constexpr double gainRef{0.8709635899560811};
+        REQUIRE(std::abs(zpk.getGain() - gainRef) <
+                std::numeric_limits<double>::epsilon()*100);
+        USignal::Vector<std::complex<double>> zerosRef
+        {
+            std::vector<std::complex<double>>
+            { 
+                0 - 1.035276180410083i,
+                0 - 1.4142135623730951i,
+                0 - 3.8637033051562737i,
+                0 + 3.8637033051562737i,
+                0 + 1.4142135623730951i,
+                0 + 1.035276180410083i
+            }
+        };
+        USignal::Vector<std::complex<double>> polesRef
+        {
+            std::vector<std::complex<double>>
+            { 
+                -0.024686186266327684 -1.0305393933278832i,
+                -0.12492582633346083 -1.3973824335027194i,
+                -1.1553327165440157 -3.462761441343769i,
+                -1.1553327165440157 +3.462761441343769i,
+                -0.12492582633346083 +1.3973824335027194i,
+                -0.024686186266327684 +1.0305393933278832i
+            }
+        };
+        auto zeros = zpk.getZeros();
+        REQUIRE(zeros.size() == zerosRef.size());
+        for (const auto &z : zeros)
+        {
+            bool matched{false};
+            for (const auto &zr : zerosRef)
+            {   
+                if (std::abs(z - zr) < std::numeric_limits<double>::epsilon()*10)
+                {   
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+
+        auto poles = zpk.getPoles();
+        REQUIRE(poles.size() == polesRef.size());
+        for (const auto &p : poles)
+        {
+            bool matched{false};
+            for (const auto &pr : polesRef)
+            {   
+                if (std::abs(p - pr) < std::numeric_limits<double>::epsilon()*10)
+                {   
+                    matched = true;
+                    break;
+                }
+            }
+            REQUIRE(matched);
+        }
+    }
+
+}
