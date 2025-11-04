@@ -274,6 +274,24 @@ USignal::operator*(const T a, const Vector<T> &x)
 }
 
 template<typename T>
+USignal::Vector<std::complex<T>> 
+USignal::operator*(const std::complex<T> a, const Vector<std::complex<T>> &x) 
+{
+    auto n = static_cast<int> (x.size());
+    USignal::Vector<std::complex<T>> y;
+    if (n == 0){return y;} 
+    y.resize(x.size());
+    const auto xPtr = std::assume_aligned<ALIGNMENT> (x.data());
+    auto yPtr = std::assume_aligned<ALIGNMENT> (y.data());
+    std::transform(xPtr, xPtr + n, yPtr,
+                   [=](const auto xi) 
+                   {   
+                       return a*xi;
+                   }); 
+    return y;
+}
+
+template<typename T>
 USignal::Vector<T> 
 USignal::operator*(const Vector<T> &x, const T a)
 {   
@@ -315,6 +333,10 @@ template USignal::Vector<double> USignal::operator+(const USignal::Vector<double
 template USignal::Vector<float> USignal::operator+(const USignal::Vector<float> &x, float a);
 template USignal::Vector<double> USignal::operator*(const USignal::Vector<double> &x, double a); 
 template USignal::Vector<float> USignal::operator*(const USignal::Vector<float> &x, float a); 
+template USignal::Vector<std::complex<double>> USignal::operator*(std::complex<double> a, const USignal::Vector<std::complex<double>> &x);
+template USignal::Vector<std::complex<float>> USignal::operator*(std::complex<float> a, const USignal::Vector<std::complex<float>> &x);
+template USignal::Vector<std::complex<double>> USignal::operator*(const USignal::Vector<std::complex<double>> &x, std::complex<double> a);
+template USignal::Vector<std::complex<float>> USignal::operator*(const USignal::Vector<std::complex<float>> &x, std::complex<float> a); 
 template USignal::Vector<double> USignal::operator/(const USignal::Vector<double> &x, double a); 
 template USignal::Vector<float> USignal::operator/(const USignal::Vector<float> &x, float a); 
 

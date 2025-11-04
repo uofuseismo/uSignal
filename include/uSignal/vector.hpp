@@ -1,5 +1,6 @@
 #ifndef USIGNAL_VECTOR_HPP
 #define USIGNAL_VECTOR_HPP
+#include <complex>
 #include <vector>
 #include <memory>
 #include <boost/align.hpp>
@@ -96,6 +97,7 @@ template<typename T> Vector<T> operator+(T a, const Vector<T> &x);
 template<typename T> Vector<T> operator+(const Vector<T> &x, T a);
 /// @result a \textbf{x}
 template<typename T> Vector<T> operator*(T a, const Vector<T> &x);
+template<typename T> Vector<std::complex<T>> operator*(std::complex<T> a, const Vector<std::complex<T>> &x);
 /// @result \textbf{x} a
 template<typename T> Vector<T> operator*(const Vector<T> &x, T a); 
 /// @result \textbf{x}/a

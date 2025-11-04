@@ -70,6 +70,7 @@ set(UTILITIES_SRCS
     src/filterDesign/finiteImpulseResponse/windowBased.cpp
     src/filterDesign/infiniteImpulseResponse/analogPrototype.cpp
     src/filterDesign/infiniteImpulseResponse/bilinearTransform.cpp
+    src/filterDesign/infiniteImpulseResponse/convertBand.cpp
     src/filterRepresentations/finiteImpulseResponse.cpp
     src/filterRepresentations/infiniteImpulseResponse.cpp
     src/filterRepresentations/secondOrderSections.cpp
@@ -101,6 +102,7 @@ target_sources(libuSignal
                   include/uSignal/filterDesign/finiteImpulseResponse/windowBased.hpp
                   include/uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp
                   include/uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp
+                  include/uSignal/filterDesign/infiniteImpulseResponse/convertBand.hpp
                   include/uSignal/filterRepresentations/finiteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/infiniteImpulseResponse.hpp
                   include/uSignal/filterRepresentations/secondOrderSections.hpp

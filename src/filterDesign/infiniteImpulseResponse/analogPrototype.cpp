@@ -20,16 +20,19 @@ USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::butterworth(
         throw std::invalid_argument("order = " + std::to_string(order)
                                   + " must be less than 25");
     }
-    const int nPoles{order + 1};
+    const int nPoles{order};
     const int nZeros{0};
     USignal::Vector<std::complex<double>> poles(nPoles);
     USignal::Vector<std::complex<double>> zeros(nZeros);
-    const double pi_twoni = M_PI/(2.0*static_cast<double> (order + 1));
-    for (int i = 0; i < nPoles; i++)
+    if (order > 0)
     {
-        auto xm = static_cast<double> (-(order + 1) + 1 + 2*i);
-        std::complex<double> arg(0.0, pi_twoni*xm);
-        poles[i] =-std::exp(arg);
+        const double pi_twoni = M_PI/(2.0*static_cast<double> (order));
+        for (int i = 0; i < nPoles; i++)
+        {
+            auto xm = static_cast<double> (-order + 1 + 2*i);
+            std::complex<double> arg(0.0, pi_twoni*xm);
+            poles[i] =-std::exp(arg);
+        }
     }
     constexpr double gain = 1.0; //k = real(prod(-p)) which is 1
     USignal::FilterRepresentations::ZerosPolesGain<double>
@@ -52,7 +55,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
                                   + " must be positive");
     }
     // Set space
-    const int nPoles{order + 1}; 
+    const int nPoles{order}; 
     const int nZeros{0};
     USignal::Vector<std::complex<double>> poles(nPoles);
     USignal::Vector<std::complex<double>> zeros(nZeros);
@@ -86,7 +89,7 @@ USignal::FilterRepresentations::ZerosPolesGain<double>
 USignal::FilterDesign::InfiniteImpulseResponse::
     AnalogPrototype::chebyshevTypeII(const int order, const double ripple)
 {
-    if (order < 0)
+    if (order <= 0)
     {   
         throw std::invalid_argument("order = " + std::to_string(order)
                                  + " must be positive");
@@ -97,8 +100,8 @@ USignal::FilterDesign::InfiniteImpulseResponse::
                                   + " must be positive");
     }   
     // Set space
-    const int nPoles{order + 1};
-    const int nZeros = (order + 1)%2 == 1 ? order : order + 1;
+    const int nPoles{order};
+    const int nZeros = order%2 == 1 ? order - 1 : order;
     USignal::Vector<std::complex<double>> poles(nPoles);
     USignal::Vector<std::complex<double>> zeros(nZeros);
     // Ripple factor
@@ -106,39 +109,35 @@ USignal::FilterDesign::InfiniteImpulseResponse::
 #ifndef NDEBUG
     assert(rippleDecibels > 1.0);
 #endif
-    const double twoni = 1.0/(2.0*static_cast<double> (order + 1));
+    const double twoni = 1.0/(2.0*static_cast<double> (order));
     const double eps = 1.0/std::sqrt(rippleTemp - 1.0);
-    const double mu = std::asinh(1.0/eps)/static_cast<double> (order + 1);
+    const double mu = std::asinh(1.0/eps)/static_cast<double> (order);
     // Compute zeros
     std::complex<double> denominator(1, 0);
-    // Odd
-    if ((order + 1)%2 == 1)
+    if (order%2 == 1)
     {
-        int j = 0;
         for (int i = 0; i < order/2; ++i)
         {
-            auto xm = static_cast<double> (-(order + 1) + 1 + 2*i);
-            zeros[j]
+            auto xm = static_cast<double> (-order + 1 + 2*i);
+            zeros[i]
                 = std::complex<double> (0.0, 1.0/(std::sin(xm*M_PI*twoni)));
-            denominator = -zeros[j]*denominator;
-            j = j + 1;
+            denominator =-zeros[i]*denominator;
         }
-        for (int i = 0; i < order/2; ++i)
+        for (int i = order/2; i < nZeros; ++i)
         {
             auto xm = static_cast<double> (2 + 2*i);
-            zeros[j]
+            zeros[i]
                 = std::complex<double> (0.0, 1.0/(std::sin(xm*M_PI*twoni)));
-            denominator = -zeros[j]*denominator;
-            j = j + 1;
+            denominator =-zeros[i]*denominator;
         }
-    }
-    // Even
-    else
-    {
+     }
+     else
+     {
         for (int i = 0; i < nZeros; ++i)
         {
-            auto xm = static_cast<double> (-(order + 1) + 1 + 2*i);
-            zeros[i] = std::complex<double> (0.0, 1.0/(std::sin(xm*M_PI*twoni)));
+            auto xm = static_cast<double> (-order + 1 + 2*i);
+            zeros[i]
+                = std::complex<double> (0.0, 1.0/(std::sin(xm*M_PI*twoni)));
             denominator = -zeros[i]*denominator;
         }
     }
@@ -148,15 +147,14 @@ USignal::FilterDesign::InfiniteImpulseResponse::
     std::complex<double> numerator(1, 0);
     for (int i = 0; i < nPoles; i++)
     {
-       //arg = 0.0 + (M_PI*((double)(-n + 1 + 2*i))*twoni)*_Complex_I;
-       double temp = M_PI*static_cast<double> (-nPoles + 1 + 2*i)*twoni;
-       std::complex<double> arg(0.0, temp);
-       std::complex<double> polesi =-std::exp(arg);
-       // Warp into chebyshev II
-       poles[i] = std::complex<double> (sinhmu*std::real(polesi),
-                                        coshmu*std::imag(polesi));
-       poles[i] = std::complex<double> (1, 0)/poles[i]; //p = 1/p
-       numerator = -poles[i]*numerator;
+        double temp = M_PI*static_cast<double> (-nPoles + 1 + 2*i)*twoni;
+        std::complex<double> arg(0.0, temp);
+        std::complex<double> polesi =-std::exp(arg);
+        // Warp into chebyshev II
+        poles[i] = std::complex<double> (sinhmu*std::real(polesi),
+                                         coshmu*std::imag(polesi));
+        poles[i] = std::complex<double> (1, 0)/poles[i]; //p = 1/p
+        numerator = -poles[i]*numerator;
     }
     double gain = std::real(numerator/denominator);
     USignal::FilterRepresentations::ZerosPolesGain<double>
@@ -173,35 +171,35 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         throw std::invalid_argument("order = " + std::to_string(order)
                                  + " must be positive");
     }
-    const int nPoles{order + 1};
+    const int nPoles{order};
     const int nZeros{0};
     USignal::Vector<std::complex<double>> poles(nPoles);
     USignal::Vector<std::complex<double>> zeros(nZeros);
     constexpr double gain{1};
     // Load precomputed poles
-    if (order == 0)
+    if (order == 1)
     {
         poles[0] = std::complex<double> (-1, 0);
     }
-    else if (order == 1)
+    else if (order == 2)
     {
         poles[0] = std::complex<double> (-0.866025403784438597, 0.500000000000000111);
         poles[1] = std::complex<double> (-0.866025403784438597, -0.500000000000000111);
     }
-    else if (order == 2)
+    else if (order == 3)
     {
         poles[0] = std::complex<double> (-0.745640385848076570, 0.711366624972835093);
         poles[1] = std::complex<double> (-0.941600026533206735, -0.000000000000000000);
         poles[2] = std::complex<double> (-0.745640385848076570, -0.711366624972835093);
     }
-    else if (order == 3)
+    else if (order == 4)
     {
         poles[0] = std::complex<double> (-0.657211171671882588, 0.830161435004873161);
         poles[1] = std::complex<double> (-0.904758796788244779, 0.270918733003874646);
         poles[2] = std::complex<double> (-0.904758796788244779, -0.270918733003874646);
         poles[3] = std::complex<double> (-0.657211171671882588, -0.830161435004873161);
     }
-    else if (order == 4)
+    else if (order == 5)
     {
         poles[0] = std::complex<double> (-0.590575944611919090, 0.907206756457454855);
         poles[1] = std::complex<double> (-0.851553619368839554, 0.442717463944332756);
@@ -209,7 +207,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[3] = std::complex<double> (-0.851553619368839554, -0.442717463944332756);
         poles[4] = std::complex<double> (-0.590575944611919090, -0.907206756457454855);
     }
-    else if (order == 5)
+    else if (order == 6)
     {
         poles[0] = std::complex<double> (-0.538552681669310918, 0.961687688195427604);
         poles[1] = std::complex<double> (-0.799654185832828657, 0.562171734693731828);
@@ -218,7 +216,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[4] = std::complex<double> (-0.799654185832828657, -0.562171734693731828);
         poles[5] = std::complex<double> (-0.538552681669310918, -0.961687688195427604);
     }
-    else if (order == 6)
+    else if (order == 7)
     {
         poles[0] = std::complex<double> (-0.496691725667232020, 1.002508508454420522);
         poles[1] = std::complex<double> (-0.752735543409321695, 0.650469630552255262);
@@ -228,7 +226,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[5] = std::complex<double> (-0.752735543409321695, -0.650469630552255262);
         poles[6] = std::complex<double> (-0.496691725667232020, -1.002508508454420522);
     }
-    else if (order == 7)
+    else if (order == 8)
     {
         poles[0] = std::complex<double> (-0.462174041253212320, 1.034388681126901188);
         poles[1] = std::complex<double> (-0.711138180848539747, 0.718651731410840156);
@@ -239,7 +237,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[6] = std::complex<double> (-0.711138180848539747, -0.718651731410840156);
         poles[7] = std::complex<double> (-0.462174041253212320, -1.034388681126901188);
     }
-    else if (order == 8)
+    else if (order == 9)
     {
         poles[0] = std::complex<double> (-0.433141556155362317, 1.060073670135930124);
         poles[1] = std::complex<double> (-0.674362268685476551, 0.773054621269118503);
@@ -251,7 +249,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[7] = std::complex<double> (-0.674362268685476551, -0.773054621269118503);
         poles[8] = std::complex<double> (-0.433141556155362317, -1.060073670135930124);
     }
-    else if (order == 9)
+    else if (order == 10)
     {
         poles[0] = std::complex<double> (-0.408322073286886023, 1.081274842819124560);
         poles[1] = std::complex<double> (-0.641751386698832027, 0.817583616719102069);
@@ -264,7 +262,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[8] = std::complex<double> (-0.641751386698832027, -0.817583616719102069);
         poles[9] = std::complex<double> (-0.408322073286886023, -1.081274842819124560);
     }
-    else if (order == 10)
+    else if (order == 11)
     {
         poles[0] = std::complex<double> (-0.386814951005509500, 1.099117466763121609);
         poles[1] = std::complex<double> (-0.612687155491519531, 0.854781389331476849);
@@ -278,7 +276,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[9] = std::complex<double> (-0.612687155491519531, -0.854781389331476849);
         poles[10] = std::complex<double> (-0.386814951005509500, -1.099117466763121609);
     }
-    else if (order == 11)
+    else if (order == 12)
     {
         poles[0] = std::complex<double> (-0.367964008552631394, 1.114373575641546266);
         poles[1] = std::complex<double> (-0.586636932186147542, 0.886377275132072651);
@@ -293,7 +291,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[10] = std::complex<double> (-0.586636932186147542, -0.886377275132072651);
         poles[11] = std::complex<double> (-0.367964008552631394, -1.114373575641546266);
     }
-    else if (order == 12)
+    else if (order == 13)
     {
         poles[0] = std::complex<double> (-0.351279232338981673, 1.127591548317704806);
         poles[1] = std::complex<double> (-0.563155984243019159, 0.913590033832510251);
@@ -309,7 +307,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[11] = std::complex<double> (-0.563155984243019159, -0.913590033832510251);
         poles[12] = std::complex<double> (-0.351279232338981673, -1.127591548317704806);
     }
-    else if (order == 13)
+    else if (order == 14)
     {
         poles[0] = std::complex<double> (-0.336386822490203019, 1.139172297839859516);
         poles[1] = std::complex<double> (-0.541876677511230587, 0.937304368351692618);
@@ -326,7 +324,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[12] = std::complex<double> (-0.541876677511230587, -0.937304368351692618);
         poles[13] = std::complex<double> (-0.336386822490203019, -1.139172297839859516);
     }
-    else if (order == 14)
+    else if (order == 15)
     {
         poles[0] = std::complex<double> (-0.322996305976644360, 1.149416154583629890);
         poles[1] = std::complex<double> (-0.522495406965833076, 0.958178726109252810);
@@ -344,7 +342,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[13] = std::complex<double> (-0.522495406965833076, -0.958178726109252810);
         poles[14] = std::complex<double> (-0.322996305976644360, -1.149416154583629890);
     }
-    else if (order == 15)
+    else if (order == 16)
     {
         poles[0] = std::complex<double> (-0.310878275564538509, 1.158552841199330441);
         poles[1] = std::complex<double> (-0.504760644442476036, 0.976713747779908603);
@@ -363,7 +361,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[14] = std::complex<double> (-0.504760644442476036, -0.976713747779908603);
         poles[15] = std::complex<double> (-0.310878275564538509, -1.158552841199330441);
     }
-    else if (order == 16)
+    else if (order == 17)
     {
         poles[0] = std::complex<double> (-0.299848945999007410, 1.166761272925667559);
         poles[1] = std::complex<double> (-0.488462933767270679, 0.993297195631678176);
@@ -383,7 +381,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[15] = std::complex<double> (-0.488462933767270679, -0.993297195631678176);
         poles[16] = std::complex<double> (-0.299848945999007410, -1.166761272925667559);
     }
-    else if (order == 17)
+    else if (order == 18)
     {
         poles[0] = std::complex<double> (-0.289759202988048470, 1.174183010600058363);
         poles[1] = std::complex<double> (-0.473426806991615268, 1.008234300314800880);
@@ -404,7 +402,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[16] = std::complex<double> (-0.473426806991615268, -1.008234300314800880);
         poles[17] = std::complex<double> (-0.289759202988048470, -1.174183010600058363);
     }
-    else if (order == 18)
+    else if (order == 19)
     {
         poles[0] = std::complex<double> (-0.280486685143936099, 1.180931628453290472);
         poles[1] = std::complex<double> (-0.459504344973098222, 1.021768776912670651);
@@ -426,7 +424,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[17] = std::complex<double> (-0.459504344973098222, -1.021768776912670651);
         poles[18] = std::complex<double> (-0.280486685143936099, -1.180931628453290472);
     }
-    else if (order == 19)
+    else if (order == 20)
     {
         poles[0] = std::complex<double> (-0.271929958025165341, 1.187099379810885980);
         poles[1] = std::complex<double> (-0.446570069820514837, 1.034097702560842214);
@@ -449,7 +447,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[18] = std::complex<double> (-0.446570069820514837, -1.034097702560842214);
         poles[19] = std::complex<double> (-0.271929958025165341, -1.187099379810885980);
     }
-    else if (order == 20)
+    else if (order == 21)
     {
         poles[0] = std::complex<double> (-0.264004159583402453, 1.192762031948052304);
         poles[1] = std::complex<double> (-0.434516890681526713, 1.045382255856986076);
@@ -473,7 +471,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[19] = std::complex<double> (-0.434516890681526713, -1.045382255856986076);
         poles[20] = std::complex<double> (-0.264004159583402453, -1.192762031948052304);
     }
-    else if (order == 21)
+    else if (order == 22)
     {
         poles[0] = std::complex<double> (-0.256637698793931945, 1.197982433555213166);
         poles[1] = std::complex<double> (-0.423252874564262804, 1.055755605227546079);
@@ -498,7 +496,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[20] = std::complex<double> (-0.423252874564262804, -1.055755605227546079);
         poles[21] = std::complex<double> (-0.256637698793931945, -1.197982433555213166);
     }
-    else if (order == 22)
+    else if (order == 23)
     {
         poles[0] = std::complex<double> (-0.249769720220895552, 1.202813187870697575);
         poles[1] = std::complex<double> (-0.412698661751014773, 1.065328794475513430);
@@ -524,7 +522,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[21] = std::complex<double> (-0.412698661751014773, -1.065328794475513430);
         poles[22] = std::complex<double> (-0.249769720220895552, -1.202813187870697575);
     }
-    else if (order == 23)
+    else if (order == 24)
     {
         poles[0] = std::complex<double> (-0.243348133752487705, 1.207298683731972577);
         poles[1] = std::complex<double> (-0.402785385519751682, 1.074195196518674900);
@@ -551,7 +549,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
         poles[22] = std::complex<double> (-0.402785385519751682, -1.074195196518674900);
         poles[23] = std::complex<double> (-0.243348133752487705, -1.207298683731972577);
     }
-    else if (order == 24)
+    else if (order == 25)
     {
         poles[0] = std::complex<double> (-0.237328066932203097, 1.211476658382565796);
         poles[1] = std::complex<double> (-0.393452987819108091, 1.082433927173832133);
@@ -581,8 +579,11 @@ USignal::FilterDesign::InfiniteImpulseResponse::
     }
     else
     {
-        throw std::invalid_argument("unsupported filter order = "
-                                  + std::to_string(order));
+        if (order > 0)
+        {
+            throw std::invalid_argument("unsupported filter order = "
+                                      + std::to_string(order));
+        }
     }
     USignal::FilterRepresentations::ZerosPolesGain<double>
         zpk{zeros, poles, gain};

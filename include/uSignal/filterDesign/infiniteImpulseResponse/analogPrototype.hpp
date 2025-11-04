@@ -17,7 +17,7 @@ USignal::FilterRepresentations::ZerosPolesGain<double> bessel(int order);
 
 /// @brief Designs a Chebyshev Type I filter.  This has ripples in the
 ///        passband.
-/// @param[in] order   The filter order.  The filter will have order + 1 poles.
+/// @param[in] order   The filter order.  The filter will have order poles.
 /// @param[in] ripple  The ripple factor in decibels - i.e., the filter will
 ///                    have ripple deciebels of ripple in the passband.
 /// @result The Chebyshev Type I analog prototype filter.
@@ -26,7 +26,7 @@ chebyshevTypeI(const int order, const double ripple);
 
 /// @brief Designs a Chebyshev Type II filter.  This has ripples in the
 ///        stopband.
-/// @param[in] order   The filter order.  The filter will have order + 1 poles.
+/// @param[in] order   The filter order.  The filter will have order poles.
 /// @param[in] ripple  The ripple factor in decibels - i.e., the filter will
 ///                    have ripple deciebels of ripple in the stopband.
 /// @result The Chebyshev Type II analog prototype filter.

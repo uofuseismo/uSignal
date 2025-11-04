@@ -5,6 +5,10 @@
 #include <uSignal/vector.hpp>
 namespace USignal::FilterRepresentations
 {
+  template<class T> class ZerosPolesGain;
+}
+namespace USignal::FilterRepresentations
+{
 /// @name SecondOrderSections "secondOrderSections.hpp"
 /// @brief An IIR filter whose representation is given by a cascade
 ///        of second order (biquad) IIR filters.
@@ -13,6 +17,11 @@ namespace USignal::FilterRepresentations
 template<class T>
 class SecondOrderSections
 {
+public:
+    enum class PairingStrategy
+    {
+        Nearest
+    };
 public:
     /// @brief Constructs the second order sections representation of the filter.
     /// @param[in] numeratorCoefficients    These are the numerator coefficients,
@@ -41,6 +50,9 @@ public:
     SecondOrderSections(
         const USignal::Vector<T> &numeratorCoefficients,
         const USignal::Vector<T> &denominatorCoefficients);
+
+    explicit SecondOrderSections(const ZerosPolesGain<T> &zpk,
+                                 PairingStrategy strategy = PairingStrategy::Nearest);
     /// @brief Copy constructor.
     SecondOrderSections(const SecondOrderSections &secondOrderSections);
     /// @brief Move constructor.

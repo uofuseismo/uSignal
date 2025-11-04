@@ -5,6 +5,7 @@
 #include <vector>
 #include "uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp"
 #include "uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp"
+#include "uSignal/filterDesign/infiniteImpulseResponse/convertBand.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -12,6 +13,21 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+
+namespace
+{
+template<typename T>
+bool matched(const std::complex<T> value,
+             const USignal::Vector<std::complex<T>> &reference,
+             const T tolerance)
+{
+    for (const auto &referenceValue : reference)
+    {
+        if (std::abs(value - referenceValue) < tolerance){return true;}
+    }
+    return false; 
+}
+}
 
 TEMPLATE_TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::BilinearTransform",
                    "[TypeName][template]",
@@ -87,9 +103,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::but
 {
     namespace UAnalogPrototype 
         = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
-    SECTION("Order 0")
+    SECTION("Order 1")
     {
-        constexpr int order{0};
+        constexpr int order{1};
         auto zpk = UAnalogPrototype::butterworth(order); 
         constexpr double gain{1};
         //REQUIRE(zpk.getOrder() == order);
@@ -101,9 +117,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::but
         REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
                 std::numeric_limits<double>::epsilon());
     }
-    SECTION("Order 4")
+    SECTION("Order 5")
     {
-        constexpr int order{4};
+        constexpr int order{5};
         constexpr double gain{1};
         USignal::Vector<std::complex<double>> polesRef
         {
@@ -142,9 +158,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
 {
     namespace UAnalogPrototype 
         = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
-    SECTION("Order 0")
+    SECTION("Order 1")
     {
-        const int order{0};
+        const int order{1};
         const double ripple{2.2};
         auto zpk = UAnalogPrototype::chebyshevTypeI(order, ripple);
         REQUIRE(zpk.getZeros().size() == 0);
@@ -156,9 +172,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
                 std::numeric_limits<double>::epsilon()*100);
     }
-    SECTION("Order 5")
+    SECTION("Order 6")
     {
-        const int order{5};
+        const int order{6};
         const double ripple{0.994};
         auto zpk = UAnalogPrototype::chebyshevTypeI(order, ripple);
         USignal::Vector<std::complex<double>> polesRef
@@ -200,9 +216,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
 {
     namespace UAnalogPrototype 
         = USignal::FilterDesign::InfiniteImpulseResponse::AnalogPrototype;
-    SECTION("Order 0")
+    SECTION("Order 1")
     {   
-        const int order{0};
+        const int order{1};
         constexpr double ripple{1.1};
         auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
         REQUIRE(zpk.getZeros().size() == 0);
@@ -214,9 +230,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
                 std::numeric_limits<double>::epsilon()*100);
     }
-    SECTION("Order 2")
+    SECTION("Order 3")
     {
-        const int order{2};
+        const int order{3};
         constexpr double ripple{1.2};
         auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
         REQUIRE(zpk.getZeros().size() == 2);
@@ -272,9 +288,9 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
             REQUIRE(matched);
         }
     }
-    SECTION("Order 5")
+    SECTION("Order 6")
     {
-        const int order{5};
+        const int order{6};
         constexpr double ripple{1.2};
         auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
         constexpr double gainRef{0.8709635899560811};
@@ -308,33 +324,206 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         REQUIRE(zeros.size() == zerosRef.size());
         for (const auto &z : zeros)
         {
-            bool matched{false};
-            for (const auto &zr : zerosRef)
-            {   
-                if (std::abs(z - zr) < std::numeric_limits<double>::epsilon()*10)
-                {   
-                    matched = true;
-                    break;
-                }
-            }
-            REQUIRE(matched);
+            REQUIRE(::matched(z, zerosRef,
+                              std::numeric_limits<double>::epsilon()*10));
         }
 
         auto poles = zpk.getPoles();
         REQUIRE(poles.size() == polesRef.size());
         for (const auto &p : poles)
         {
-            bool matched{false};
-            for (const auto &pr : polesRef)
-            {   
-                if (std::abs(p - pr) < std::numeric_limits<double>::epsilon()*10)
-                {   
-                    matched = true;
-                    break;
-                }
-            }
-            REQUIRE(matched);
+            REQUIRE(::matched(p, polesRef,
+                              std::numeric_limits<double>::epsilon()*10));
         }
     }
+}
 
+TEST_CASE("Convert lowpass to lowpass")
+{
+    namespace UIIRDesign = USignal::FilterDesign::InfiniteImpulseResponse;
+    const int order{3};
+    const double ripple{3};
+    auto zpkLowpassAnalogPrototype
+        = UIIRDesign::AnalogPrototype::chebyshevTypeI(order, ripple);
+    constexpr double cutoffFrequency{2};
+    constexpr double cutoffFrequencyRadSeconds{cutoffFrequency*(2*M_PI)};
+    auto zpkLowpass
+        = UIIRDesign::convertLowpassAnalogPrototypeToLowpass(
+            zpkLowpassAnalogPrototype, cutoffFrequencyRadSeconds);
+    // [z, p, k] = signal.cheb1ap(3, 3.)
+    // [z1, p1, k1] = signal.lp2lp_zpk(z, p, k, 2*2*pi)
+    USignal::Vector<std::complex<double>> polesRef
+    {   
+        std::vector<std::complex<double>>
+        {
+            -1.876286105033209+11.35766707809726i,
+            -3.752572210066417-0i,
+            -1.876286105033209-11.35766707809726i
+        }
+    };
+    constexpr double gainReference{497.279802960698};
+    auto poles = zpkLowpass.getPoles();
+    REQUIRE(std::abs(zpkLowpass.getGain() - gainReference) < 1.e-10);
+    REQUIRE(zpkLowpass.getZeros().size() == 0);
+    REQUIRE(poles.size() == polesRef.size());  
+    for (const auto &p : poles)
+    {
+        REQUIRE(::matched(p, polesRef,
+                          std::numeric_limits<double>::epsilon()*100));
+    }
+}
+
+TEST_CASE("Convert lowpass to highpass")
+{
+    namespace UIIRDesign = USignal::FilterDesign::InfiniteImpulseResponse;
+    const int order{3};
+    const double ripple{3};
+    auto zpkLowpassAnalogPrototype
+        = UIIRDesign::AnalogPrototype::chebyshevTypeI(order, ripple);
+    constexpr double cutoffFrequency{2};
+    constexpr double cutoffFrequencyRadSeconds{cutoffFrequency*(2*M_PI)};
+    auto zpkHighpass
+        = UIIRDesign::convertLowpassAnalogPrototypeToHighpass(
+            zpkLowpassAnalogPrototype, cutoffFrequencyRadSeconds);
+    // [z, p, k] = signal.cheb1ap(3, 3.)
+    // [z1, p1, k1] = signal.lp2hp_zpk(z, p, k, 2*2*pi)
+    USignal::Vector<std::complex<double>> zerosRef
+    {
+        std::vector<std::complex<double>> {0 + 0i, 0 + 0i, 0 + 0i}
+    };
+    USignal::Vector<std::complex<double>> polesRef
+    {   
+        std::vector<std::complex<double>>
+        {
+            -2.235872465862575-13.534340540192852i,
+            -42.081447491888454-0i,
+            -2.235872465862575+13.534340540192852i
+        }
+    };  
+    constexpr double gainReference{1};
+    auto zeros = zpkHighpass.getZeros();
+    auto poles = zpkHighpass.getPoles();
+    REQUIRE(std::abs(zpkHighpass.getGain() - gainReference) < 1.e-10);
+    REQUIRE(zeros.size() == zerosRef.size()); 
+    for (const auto &z : zeros)
+    {
+        REQUIRE(::matched(z, zerosRef,
+                          std::numeric_limits<double>::epsilon()*100));
+    }
+    REQUIRE(poles.size() == polesRef.size());  
+    for (const auto &p : poles)
+    {   
+        REQUIRE(::matched(p, polesRef,
+                          std::numeric_limits<double>::epsilon()*100));
+    }   
+}
+
+TEST_CASE("Convert lowpass to bandpass")
+{
+    namespace UIIRDesign = USignal::FilterDesign::InfiniteImpulseResponse;
+    const int order{4};
+    auto zpkLowpassAnalogPrototype
+        = UIIRDesign::AnalogPrototype::butterworth(order);
+    constexpr double lowCornerRadSeconds{4*(2*M_PI)};
+    constexpr double bandwidthRadSeconds{10*(2*M_PI)};
+    constexpr double highCornerRadSeconds{lowCornerRadSeconds + bandwidthRadSeconds};
+    constexpr std::pair<double, double>
+        cutoffFrequenciesRadSeconds{lowCornerRadSeconds, highCornerRadSeconds};
+    auto zpkBandpass
+        = UIIRDesign::convertLowpassAnalogPrototypeToBandpass(
+            zpkLowpassAnalogPrototype, cutoffFrequenciesRadSeconds);
+    USignal::Vector<std::complex<double>> zerosRef
+    {   
+        std::vector<std::complex<double>> {0 + 0i, 0 + 0i, 0 + 0i, 0 + 0i} 
+    };
+    USignal::Vector<std::complex<double>> polesRef
+    {
+        std::vector<std::complex<double>>
+        {
+            -2.747844608990089-8.59936563405789i,
+            -9.43813420914492-5.793234681905291i,
+            -9.43813420914492+5.793234681905291i,
+            -2.747844608990089+8.59936563405789i,
+           -21.296864586383766+66.6484286768465i,
+           -48.6109288336437+29.837943877279145i,
+           -48.6109288336437-29.837943877279145i,
+           -21.296864586383766-66.6484286768465i,
+        }
+    };
+    constexpr double gainReference{15585454.565440388}; 
+    REQUIRE(std::abs(zpkBandpass.getGain() - gainReference) < 1.e-5);
+    auto zeros = zpkBandpass.getZeros();
+    auto poles = zpkBandpass.getPoles();
+    REQUIRE(zerosRef.size() == zeros.size());
+    for (const auto &z : zeros)
+    {
+        REQUIRE(::matched(z, zerosRef,
+                          std::numeric_limits<double>::epsilon()*100));
+    }
+    REQUIRE(polesRef.size() == poles.size());
+    for (const auto &p : poles)
+    {   
+        REQUIRE(::matched(p, polesRef,
+                          std::numeric_limits<double>::epsilon()*200));
+    }    
+}
+
+TEST_CASE("Convert lowpass to bandstop")
+{
+    namespace UIIRDesign = USignal::FilterDesign::InfiniteImpulseResponse;
+    const int order{4};
+    auto zpkLowpassAnalogPrototype
+        = UIIRDesign::AnalogPrototype::butterworth(order);
+    constexpr double lowCornerRadSeconds{4*(2*M_PI)};
+    constexpr double bandwidthRadSeconds{10*(2*M_PI)};
+    constexpr double highCornerRadSeconds{lowCornerRadSeconds + bandwidthRadSeconds};
+    constexpr std::pair<double, double>
+        cutoffFrequenciesRadSeconds{lowCornerRadSeconds, highCornerRadSeconds};
+    auto zpkBandstop
+        = UIIRDesign::convertLowpassAnalogPrototypeToBandstop(
+            zpkLowpassAnalogPrototype, cutoffFrequenciesRadSeconds);
+    USignal::Vector<std::complex<double>> zerosRef
+    {
+        std::vector<std::complex<double>> 
+        {
+            0 + 25.132741228718345i,
+            0 + 25.132741228718345i,
+            0 + 25.132741228718345i,
+            0 + 25.132741228718345i,
+            0 - 25.132741228718345i,     
+            0 - 25.132741228718345i,     
+            0 - 25.132741228718345i,     
+            0 - 25.132741228718345i
+        }
+    };
+    USignal::Vector<std::complex<double>> polesRef
+    {   
+        std::vector<std::complex<double>>
+        {   
+            -2.747844608990089+8.59936563405789i,
+            -9.43813420914492+5.79323468190529i,
+            -9.43813420914492-5.79323468190529i,
+            -2.747844608990089-8.59936563405789i,
+            -21.296864586383766-66.6484286768465i,
+            -48.6109288336437-29.837943877279145i,
+            -48.6109288336437+29.837943877279145i,
+            -21.296864586383766+66.6484286768465i
+        }
+    };
+    constexpr double gainReference{1};
+    REQUIRE(std::abs(zpkBandstop.getGain() - gainReference) < 1.e-14);
+    auto zeros = zpkBandstop.getZeros();
+    auto poles = zpkBandstop.getPoles();
+    REQUIRE(zerosRef.size() == zeros.size());
+    for (const auto &z : zeros)
+    {
+        REQUIRE(::matched(z, zerosRef,
+                          std::numeric_limits<double>::epsilon()*200));
+    }   
+    REQUIRE(polesRef.size() == poles.size());
+    for (const auto &p : poles)
+    {
+        REQUIRE(::matched(p, polesRef,
+                          std::numeric_limits<double>::epsilon()*200));
+    }    
 }
