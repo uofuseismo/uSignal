@@ -3,6 +3,7 @@
 #include <fstream>
 #include <complex>
 #include <vector>
+#include <random>
 #include <chrono>
 #include <cmath>
 #include "uSignal/filterImplementations/transposeDirectForm2.hpp"
@@ -167,6 +168,56 @@ TEMPLATE_TEST_CASE("CoreTest::FilterImplementations::SecondOrderSections",
         std::cout << "SOS processing time: " << elapsedTime << std::endl;
         auto l8Norm = ::computeInfinityNorm<TestType> (yRef, outputSignal);
         REQUIRE(l8Norm < 1.e-9);
+    }
+
+    SECTION("Real Time")
+    {
+        Vector<TestType> bs( 
+            std::vector<TestType> {0.000401587491686,  0.000803175141692,  0.000401587491549,
+                                   1.000000000000000, -2.000000394412897,  0.999999999730209,
+                                   1.000000000000000,  1.999999605765104,  1.000000000341065,
+                                   1.000000000000000, -1.999999605588274,  1.000000000269794} );
+        Vector<TestType> as( 
+            std::vector<TestType> {1.000000000000000, -1.488513049541281,  0.562472929601870,
+                                   1.000000000000000, -1.704970593447777,  0.792206889942566,
+                                   1.000000000000000, -1.994269533089365,  0.994278822534674,
+                                   1.000000000000000, -1.997472946622339,  0.997483252685326} );
+        USignal::FilterRepresentations::SecondOrderSections
+            filterCoefficients{ bs, as };
+
+        auto yRef = ::loadSignal<TestType> (sosFileName);
+
+        USignal::FilterImplementations::SecondOrderSections
+            sos{filterCoefficients, true};
+
+        std::mt19937 generator(83823);
+        std::uniform_int_distribution<int> distribution{1, 100};
+        USignal::Vector<TestType> outputSignal(yRef.size());
+        int kStart{0};
+        auto nSamples = static_cast<int> (inputSignal.size());
+        for (int k = 0; k < nSamples; ++k)
+        {   
+            int nSamplesInPacket = distribution(generator);
+            auto kEnd = std::min(kStart + nSamplesInPacket, nSamples);
+            nSamplesInPacket = kEnd - kStart; // Fix packet length 
+            if (nSamplesInPacket <= 0){break;}
+            USignal::Vector<TestType> packet(nSamplesInPacket);
+            std::copy(inputSignal.data() + kStart, inputSignal.data() + kEnd,
+                      packet.data());
+            REQUIRE_NOTHROW(sos.setInput(packet));
+            REQUIRE_NOTHROW(sos.apply());
+            auto outputPacket = sos.getOutput();
+            std::copy(outputPacket.data(),
+                      outputPacket.data() + nSamplesInPacket,
+                      outputSignal.data() + kStart);
+
+            kStart = kStart + nSamplesInPacket;
+            if (kStart >= nSamples){break;}
+        }   
+        auto l8Norm = ::computeInfinityNorm<TestType> (yRef, outputSignal);
+        REQUIRE(l8Norm < 1.e-9);
+
+
     }
 }
 

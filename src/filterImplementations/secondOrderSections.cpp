@@ -18,7 +18,9 @@ class SecondOrderSections<double>::SecondOrderSectionsImpl
 {
 public:
     SecondOrderSectionsImpl(
-        const UFR::SecondOrderSections<double> &filterCoefficients)
+        const UFR::SecondOrderSections<double> &filterCoefficients,
+        const bool isRealTime) :
+        mIsRealTime(isRealTime)
     {
         mSections = filterCoefficients.getNumberOfSections();
         if (mSections < 1)
@@ -162,7 +164,9 @@ class SecondOrderSections<float>::SecondOrderSectionsImpl
 {
 public:
     SecondOrderSectionsImpl(
-        const UFR::SecondOrderSections<float> &filterCoefficients)
+        const UFR::SecondOrderSections<float> &filterCoefficients,
+        const bool isRealTime) :
+        mIsRealTime(isRealTime)
     {
         mSections = filterCoefficients.getNumberOfSections();
         if (mSections < 1)
@@ -298,8 +302,10 @@ static_assert(false, "Only IPP SOS filter implemented");
 /// Constructor
 template<class T>
 SecondOrderSections<T>::SecondOrderSections(
-    const UFR::SecondOrderSections<T> &filterCoefficients) :
-    pImpl(std::make_unique<SecondOrderSectionsImpl> (filterCoefficients))
+    const UFR::SecondOrderSections<T> &filterCoefficients,
+    const bool isRealTime) :
+    pImpl(std::make_unique<SecondOrderSectionsImpl> (filterCoefficients,
+                                                     isRealTime))
 {
 }
 

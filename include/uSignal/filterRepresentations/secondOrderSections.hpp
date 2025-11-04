@@ -6,6 +6,7 @@
 namespace USignal::FilterRepresentations
 {
   template<class T> class ZerosPolesGain;
+  template<class T> class InfiniteImpulseResponse;
 }
 namespace USignal::FilterRepresentations
 {
@@ -20,6 +21,7 @@ class SecondOrderSections
 public:
     enum class PairingStrategy
     {
+        None,
         Nearest
     };
 public:
@@ -51,6 +53,8 @@ public:
         const USignal::Vector<T> &numeratorCoefficients,
         const USignal::Vector<T> &denominatorCoefficients);
 
+    explicit SecondOrderSections(const InfiniteImpulseResponse<T> &ba,
+                                 PairingStrategy strategy = PairingStrategy::Nearest);
     explicit SecondOrderSections(const ZerosPolesGain<T> &zpk,
                                  PairingStrategy strategy = PairingStrategy::Nearest);
     /// @brief Copy constructor.

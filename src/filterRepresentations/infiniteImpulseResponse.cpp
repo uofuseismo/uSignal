@@ -1,4 +1,5 @@
 #include <iostream>
+#include <complex>
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/vector.hpp"
@@ -63,12 +64,12 @@ InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
     // Compute polynomial representation of poles by expanding:
     // (p - p_1)*(p - p_2)*...*(p - p_n)
     auto a = Utilities::Math::Polynomial::expandToRealCoefficients(poles);
-    pImpl->mNumeratorCoefficients = b;
-    pImpl->mDenominatorCoefficients = a;
     pImpl->mOrder
         = std::max( static_cast<int> (b.size()),
                     static_cast<int> (a.size()) )
         - 1;
+    pImpl->mNumeratorCoefficients = std::move(b);
+    pImpl->mDenominatorCoefficients = std::move(a);
 }
 
 /*

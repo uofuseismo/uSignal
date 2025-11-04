@@ -17,7 +17,8 @@ public:
     /// @brief Constructor.
     /// @param[in] filterCoefficients   The second order section filter
     ///                                 coefficients.
-    explicit SecondOrderSections(const USignal::FilterRepresentations::SecondOrderSections<T> &filterCoefficients);
+    explicit SecondOrderSections(const USignal::FilterRepresentations::SecondOrderSections<T> &filterCoefficients, const bool isRealTime = false);
+
     /// @result True indicates the 
     [[nodiscard]] bool isInitialized() const noexcept final;   
 

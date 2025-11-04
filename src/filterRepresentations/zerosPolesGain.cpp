@@ -1,3 +1,4 @@
+#include <iostream>
 #include <complex>
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
@@ -47,13 +48,13 @@ ZerosPolesGain<T>::ZerosPolesGain(
     {
         throw std::invalid_argument("No denominator coefficients");
     }
+    const T a0{as.at(0)};
     if (as.at(0) == 0){throw std::invalid_argument("a[0] == 0");}
     // Normalize
-    const T a0{as.at(0)};
     bs = bs/a0;
-    as = as/a0; 
+    as = as/a0;
     // Compute gain
-    const T gain = bs.at(0);
+    const T gain{bs.at(0)};
     bs = bs/gain;
     // Get the numerator/denominator roots
     USignal::Vector<std::complex<T>> 
