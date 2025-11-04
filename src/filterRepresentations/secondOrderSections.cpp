@@ -399,6 +399,8 @@ zpk2sos(const ZerosPolesGain<double> &zpk,
 #else
     ::cmplxreal(poles, p, isRealPole, tol); 
 #endif
+    std::vector<std::array<double, 3>> bsSections;
+    std::vector<std::array<double, 3>> asSections;
     std::vector<bool> zmask(z.size(), false);
     std::vector<bool> pmask(p.size(), false);
     for (int is=0; is<nSections; is++)
@@ -525,12 +527,54 @@ zpk2sos(const ZerosPolesGain<double> &zpk,
             zpkTemp(ztemp, ptemp, ktemp);
         USignal::FilterRepresentations::InfiniteImpulseResponse<double>
             baTemp(zpkTemp);
+        // Push it back
+        auto bsWork = baTemp.getNumeratorFilterCoefficients();
+        auto asWork = baTemp.getDenominatorFilterCoefficients();
+        std::array<double, 3>
+            bSection{bsWork.at(0), bsWork.at(1), bsWork.at(2)};
+        std::array<double, 3>
+            aSection{asWork.at(0), asWork.at(1), asWork.at(2)};
+        bsSections.push_back(std::move(bSection));
+        asSections.push_back(std::move(aSection));
 /*
         baTemp = zpk2tf(zpkTemp);
         // Save the transfer function of the secon dorder section
         basAll.push_back(baTemp);
 */
     } // Loop on sections 
+    // Reality check
+    for (int iz = 0; iz < zmask.size(); ++iz)
+    {   
+        if (!zmask[iz])
+        {
+#ifndef NDEBUG
+            assert(false);
+#else
+            throw std::runtime_error(
+               "Failed to find zero " + std::to_string(iz)
+             + " nSections = " + std::to_string(nSections));
+#endif
+        }
+    }   
+    for (int ip = 0; ip < pmask.size(); ++ip)
+    {
+        if (!pmask[ip])
+        {
+#ifndef NDEBUG
+            assert(false);
+#else
+            throw std::runtime_error(
+               "Failed to find pole " + std::to_string(ip)
+             + " nSections = " + std::to_string(nSections));
+#endif
+        }
+    }
+    // We want the `worst' poles last so reverse
+    std::reverse(bsSections.begin(), bsSections.end());
+    std::reverse(asSections.begin(), asSections.end());
+    // Pack and return the result
+    SecondOrderSections<double> result{bsSections, asSections};
+    return result;
 }
 
 }

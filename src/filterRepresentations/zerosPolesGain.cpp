@@ -1,6 +1,8 @@
 #include <complex>
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
+#include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/vector.hpp"
+#include "src/utilities/math/polynomial.hpp"
 
 using namespace USignal::FilterRepresentations;
 
@@ -27,6 +29,47 @@ ZerosPolesGain<T>::ZerosPolesGain(
     pImpl->mPoles = poles;
     pImpl->mGain = gain;
     pImpl->mInitialized = true;
+}
+
+/// Construct from a transfer function IIR representations
+template<class T>
+ZerosPolesGain<T>::ZerosPolesGain(
+    const InfiniteImpulseResponse<T> &ba)
+{
+    auto bs = ba.getNumeratorFilterCoefficients();
+    if (bs.empty())
+    {
+        throw std::invalid_argument("No numerator coefficients");
+    }
+    if (bs.at(0) == 0){throw std::invalid_argument("b[0] == 0");}
+    auto as = ba.getDenominatorFilterCoefficients();
+    if (as.empty())
+    {
+        throw std::invalid_argument("No denominator coefficients");
+    }
+    if (as.at(0) == 0){throw std::invalid_argument("a[0] == 0");}
+    // Normalize
+    const T a0{as.at(0)};
+    bs = bs/a0;
+    as = as/a0; 
+    // Compute gain
+    const T gain = bs.at(0);
+    bs = bs/gain;
+    // Get the numerator/denominator roots
+    USignal::Vector<std::complex<T>> 
+        zeros( std::vector<std::complex<T>> (1, 0) );
+    if (bs.size() > 1)
+    {
+        zeros = USignal::Utilities::Math::Polynomial::computeRoots(bs);
+    }
+    USignal::Vector<std::complex<T>>
+        poles( std::vector<std::complex<T>> (1, 0) );
+    if (as.size() > 1)
+    {
+        poles = USignal::Utilities::Math::Polynomial::computeRoots(as);
+    }
+    ZerosPolesGain<T> zpk(zeros, poles, gain);
+    *this = std::move(zpk);
 }
 
 /// Copy constructor

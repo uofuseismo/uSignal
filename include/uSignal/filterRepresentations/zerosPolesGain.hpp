@@ -5,6 +5,10 @@
 #include <memory>
 namespace USignal::FilterRepresentations
 {
+ template<class T> class InfiniteImpulseResponse;
+}
+namespace USignal::FilterRepresentations
+{
 template<class T = double>
 class ZerosPolesGain
 {
@@ -20,6 +24,10 @@ public:
     ZerosPolesGain(const ZerosPolesGain &zerosPolesGain);
     /// @brief Move constructor.
     ZerosPolesGain(ZerosPolesGain &&zerosPolesGain) noexcept;
+    /// @brief Constructs a zeros/poles/gain representation from a infinite
+    ///        impulse response transfer function representations.
+    /// @param[in] ba   The transfer function representation of the IIR filter.
+    explicit ZerosPolesGain(const InfiniteImpulseResponse<T> &ba);
 
     /// @result The poles of the system.
     [[nodiscard]] USignal::Vector<std::complex<T>> getPoles() const;

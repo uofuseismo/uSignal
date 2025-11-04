@@ -2,11 +2,27 @@
 #include <complex>
 #include <cmath>
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
+#include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+
+namespace
+{
+template<typename T>
+bool matched(const std::complex<T> value,
+             const USignal::Vector<std::complex<T>> &reference,
+             const T tolerance)
+{
+    for (const auto &referenceValue : reference)
+    {   
+        if (std::abs(value - referenceValue) < tolerance){return true;}
+    }   
+    return false; 
+}
+}
 
 TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
                    "[TypeName][template]",
@@ -56,7 +72,7 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
         }   
         CHECK(Catch::Approx(gainRef).margin(
              std::numeric_limits<TestType>::epsilon()*100) == gain);
-     }
+    }
 
     SECTION("Copy")
     {   
@@ -79,6 +95,50 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
                   std::numeric_limits<TestType>::epsilon()*100) == residual);
         }
         CHECK(Catch::Approx(gainRef).margin(
-             std::numeric_limits<TestType>::epsilon()*100) == gain);
-     }   
+              std::numeric_limits<TestType>::epsilon()*100) == gain);
+    }
+
+    SECTION("From transfer function")
+    {
+        USignal::Vector<TestType> bs( std::vector<TestType> {2, 1, 4} );
+        USignal::Vector<TestType> as( std::vector<TestType> {4, 1, -3, 8} );
+        USignal::FilterRepresentations::InfiniteImpulseResponse<TestType>
+            ba(bs, as);
+        USignal::FilterRepresentations::ZerosPolesGain zpkFromBA(ba);
+        constexpr TestType gainRef{0.5};
+        USignal::Vector<std::complex<TestType>> zRef
+        {
+            std::vector<std::complex<TestType>>
+            {
+                -0.24999999999999994+1.3919410907075054i,
+                -0.24999999999999994-1.3919410907075054i,
+            }
+        };
+        USignal::Vector<std::complex<TestType>> pRef
+        {
+            std::vector<std::complex<TestType>>
+            {
+                -1.5568705631796869+0i,
+                0.6534352815898432+0.9260942945910597i,
+                0.6534352815898432-0.9260942945910597i
+            }
+        };
+        CHECK(Catch::Approx(gainRef).margin(
+              std::numeric_limits<TestType>::epsilon()*100) ==
+              zpkFromBA.getGain());
+        auto zeros = zpkFromBA.getZeros();
+        auto poles = zpkFromBA.getPoles();
+        REQUIRE(zeros.size() == zRef.size());
+        for (const auto &z : zeros)
+        {
+            REQUIRE(::matched(z, zRef,
+                              std::numeric_limits<TestType>::epsilon()*10));
+        }
+        REQUIRE(poles.size() == pRef.size());
+        for (const auto &p : poles)
+        {
+            REQUIRE(::matched(p, pRef,
+                              std::numeric_limits<TestType>::epsilon()*10));
+        }
+    }
 }
