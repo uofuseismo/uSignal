@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cmath>
 #include <complex>
 #ifndef NDEBUG
@@ -205,14 +206,14 @@ createDigitalBandpassOrBandstop(
     {
         auto zpkAnalogBandpass
             = convertLowpassAnalogPrototypeToBandpass(*analogPrototype,
-                                                      warpedFrequencies);
+                                                      passband);
         return bilinearTransform<double>(zpkAnalogBandpass, 2);
     }
     else
     {
         auto zpkAnalogBandstop
             = convertLowpassAnalogPrototypeToBandstop(*analogPrototype,
-                                                      warpedFrequencies);
+                                                      passband);
         return bilinearTransform<double>(zpkAnalogBandstop, 2); 
     }
 }

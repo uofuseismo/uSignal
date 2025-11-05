@@ -35,5 +35,11 @@ USignal::Vector<std::complex<T>> expand(const USignal::Vector<std::complex<T>> &
 ///        real-valued coefficients.
 template<typename T>
 USignal::Vector<T> expandToRealCoefficients(const USignal::Vector<std::complex<T>> &roots);
+
+/// @brief Multiplies the coefficients of two polynomials via convolution.
+template<typename T> 
+USignal::Vector<T> multiply(const USignal::Vector<T> &polynomial1,
+                            const USignal::Vector<T> &polynomial2); 
+
 }
 #endif

@@ -6,6 +6,10 @@
 #include <uSignal/filterRepresentations/zerosPolesGain.hpp>
 namespace USignal::FilterRepresentations
 {
+ template<class T> class SecondOrderSections;
+}
+namespace USignal::FilterRepresentations
+{
 /// @name InfiniteImpulseResponse "infiniteImpulseResponse.hpp"
 /// @brief An IIR filter whose representation is given by a numerator
 ///        and denominator coefficients.
@@ -24,6 +28,8 @@ public:
         const USignal::Vector<T> &denominatorCoefficients);
     /// @brief Constructs the IIR from its zeros, poles, and gain.
     explicit InfiniteImpulseResponse(const ZerosPolesGain<T> &zpk);
+    /// @brief Constructs the IIR from its second order sections representation.
+    explicit InfiniteImpulseResponse(const SecondOrderSections<T> &sos);
     /// @brief Copy constructor.
     InfiniteImpulseResponse(const InfiniteImpulseResponse &secondOrderSections);
     /// @brief Move constructor.

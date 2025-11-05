@@ -10,7 +10,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial",
+TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
                    "[TypeName][template]",
                    float, double)//, std::complex<std::double>)
 {
@@ -283,5 +283,22 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ExpandPolynomial",
             CHECK(coefficients.at(i) ==
                   Catch::Approx(reference.at(i)).margin(tolerance));
         }
+    }
+}
+
+TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::multiply",
+                   "[TypeName][template]",
+                   float, double)//, std::complex<std::double>)
+{
+    const TestType tolerance{10*std::numeric_limits<TestType>::epsilon()};
+    USignal::Vector<TestType> p1({1, 2, 3});
+    USignal::Vector<TestType> p2({9, 5, 1, 11});
+    USignal::Vector<TestType> reference({9, 23, 38, 28, 25, 33});
+    auto p1p2 = USignal::Utilities::Math::Polynomial::multiply(p1, p2);
+    REQUIRE(p1p2.size() == reference.size());
+    for (int i = 0; i < static_cast<int> (reference.size()); ++i)
+    {
+        CHECK(p1p2.at(i) ==
+              Catch::Approx(reference.at(i)).margin(tolerance));
     }
 }

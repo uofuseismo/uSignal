@@ -6,7 +6,9 @@
 #include "uSignal/filterDesign/infiniteImpulseResponse/bilinearTransform.hpp"
 #include "uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp"
 #include "uSignal/filterDesign/infiniteImpulseResponse/convertBand.hpp"
+#include "uSignal/filterDesign/infiniteImpulseResponse/digital.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
+#include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
@@ -526,4 +528,52 @@ TEST_CASE("Convert lowpass to bandstop")
         REQUIRE(::matched(p, polesRef,
                           std::numeric_limits<double>::epsilon()*200));
     }    
+}
+
+TEST_CASE("Design digital butterworth bandpass")
+{
+    namespace UFD = USignal::FilterDesign::InfiniteImpulseResponse::Digital;
+    namespace UFR = USignal::FilterRepresentations;
+    const int order{9};
+    constexpr std::pair<double, double> normalizedFrequencies(0.2, 0.6);
+    auto zpk = UFD::createButterworthBandpass(order, normalizedFrequencies);
+    UFR::InfiniteImpulseResponse<double> ba(zpk); 
+    auto bs = ba.getNumeratorFilterCoefficients();
+    auto as = ba.getDenominatorFilterCoefficients();
+    USignal::Vector<double> bsRef
+    {
+        std::vector<double> {0.001065394524,   0.000000000000,
+                            -0.009588550712,   0.000000000000,
+                             0.038354202850,  -0.000000000000,
+                            -0.089493139982,   0.000000000000,
+                             0.134239709973,  -0.000000000000,
+                            -0.134239709973,  -0.000000000000,
+                             0.089493139982,  -0.000000000000,
+                            -0.038354202850,   0.000000000000,
+                             0.009588550712,   0.000000000000,
+                            -0.001065394524}
+    };
+    USignal::Vector<double> asRef
+    {
+        std::vector<double> {1.000000000000,  -4.122017284406,
+                             9.504415355480,  -15.991234305338,
+                             22.198678051760, -26.228218162255,
+                             26.787904695666, -23.899415459352,
+                             18.869452192123, -13.188721760666,
+                             8.151696207859,  -4.434500672760,
+                             2.117697034965,  -0.874531051117,
+                             0.307669850093,  -0.089310128165,
+                             0.020735426453,  -0.003439408018,
+                             0.000355580604}
+    };
+    REQUIRE(bs.size() == bsRef.size());
+    for (int i = 0; i < static_cast<int> (bs.size()); ++i)
+    {
+        CHECK(Catch::Approx(bs.at(i)).margin(1.e-9) == bsRef.at(i));
+    }                        
+    REQUIRE(as.size() == asRef.size());
+    for (int i = 0; i < static_cast<int> (as.size()); ++i)
+    {   
+        CHECK(Catch::Approx(as.at(i)).margin(1.e-9) == asRef.at(i));
+    }                            
 }

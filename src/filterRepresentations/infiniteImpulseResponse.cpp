@@ -2,10 +2,45 @@
 #include <complex>
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
+#include "uSignal/filterRepresentations/secondOrderSections.hpp"
 #include "uSignal/vector.hpp"
 #include "src/utilities/math/polynomial.hpp"
 
 using namespace USignal::FilterRepresentations;
+
+namespace
+{
+
+template<typename T>
+USignal::Vector<T> expandSOS(
+    const USignal::Vector<T> &coeffs)
+{
+    if (coeffs.empty())
+    {
+        throw std::invalid_argument("Coefficients are empty");
+    }
+    if (coeffs.size()%3 != 0)
+    {
+        throw std::invalid_argument("Coeffs must be divisible by 3");
+    }
+    auto nSections = static_cast<int> (coeffs.size()/3);
+    // Initialize 
+    constexpr T zero{0};
+    USignal::Vector<T> result(3, zero);
+    std::copy(coeffs.begin(), coeffs.begin() + 3, result.begin());
+    // Expand it out via convolution
+    for (int is = 1; is < nSections; ++is)
+    { 
+        USignal::Vector<T> temp(3, zero);
+        std::copy(coeffs.begin() + 3*is, 
+                  coeffs.begin() + 3*(is + 1),
+                  temp.begin());
+        result = USignal::Utilities::Math::Polynomial::multiply(result, temp);
+    } 
+    return result;
+}
+
+}
 
 template<typename T>
 class InfiniteImpulseResponse<T>::InfiniteImpulseResponseImpl
@@ -72,6 +107,39 @@ InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
     pImpl->mDenominatorCoefficients = std::move(a);
 }
 
+/// Constructor
+template<typename T>
+InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
+    const SecondOrderSections<T> &sos)
+{
+    auto numeratorCoefficients
+        = sos.getNumeratorFilterCoefficientsReference();
+    if (numeratorCoefficients.empty())
+    {
+        throw std::invalid_argument("No numerator coefficients");
+    }
+    if (numeratorCoefficients.size()%3 != 0)
+    {
+        throw std::invalid_argument("bs length not divisible by 3");
+    }
+    auto denominatorCoefficients
+        = sos.getDenominatorFilterCoefficientsReference();
+    if (denominatorCoefficients.empty())
+    {
+        throw std::invalid_argument("No denominator coefficients");
+    }
+    if (denominatorCoefficients.size()%3 != 0)
+    {
+        throw std::invalid_argument("as length not divisible by 3");
+    }
+    auto expandedNumeratorCoefficients = ::expandSOS(numeratorCoefficients);
+    auto expandedDenominatorCoefficients = ::expandSOS(denominatorCoefficients);
+    pImpl = std::make_unique<InfiniteImpulseResponseImpl> ();
+    pImpl->mNumeratorCoefficients
+         = std::move(expandedNumeratorCoefficients);
+    pImpl->mDenominatorCoefficients
+         = std::move(expandedDenominatorCoefficients);
+}
 /*
 template<>
 InfiniteImpulseResponse<std::complex<double>>::InfiniteImpulseResponse(

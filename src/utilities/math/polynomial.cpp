@@ -9,6 +9,11 @@
 
 namespace
 {
+#ifdef WITH_IPP
+#include <ipp/ipps.h>
+#else
+static_assert(false, "convolution requries ipps");
+#endif
 #ifdef WITH_MKL
 #include <mkl_lapacke.h>
 #ifndef lapack_int
@@ -257,6 +262,82 @@ USignal::Utilities::Math::Polynomial::expandToRealCoefficients(
     return polynomialCoefficients;
 }
 
+/// Multiply polynomials
+template<typename T>
+USignal::Vector<T>
+USignal::Utilities::Math::Polynomial::multiply(
+    const USignal::Vector<T> &polynomial1,
+    const USignal::Vector<T> &polynomial2)
+{
+    if (polynomial1.empty())
+    {
+        throw std::invalid_argument("First polynomial is empty");
+    }
+    if (polynomial2.empty())
+    {
+        throw std::invalid_argument("Second polynomial is empty");
+    }
+    // Convolve
+    auto src1Len = static_cast<int> (polynomial1.size());
+    auto src2Len = static_cast<int> (polynomial2.size());
+    int length = src1Len + src2Len - 1;
+    constexpr IppEnum implementation{ippAlgDirect};
+    int bufferSize{0};
+    constexpr T zero{0};
+    USignal::Vector<T> result(length, zero);
+    if (std::is_same<T, double>::value)
+    {
+        IppStatus status
+            = ippsConvolveGetBufferSize(src1Len, src2Len, ipp64f,
+                                        implementation, &bufferSize);
+        if (status != ippStsNoErr)
+        {
+            throw std::runtime_error(
+               "Failed to compute double convolution buffer size");
+        }
+        Ipp8u *pBuffer = ippsMalloc_8u(bufferSize);
+        auto pSrc1 = reinterpret_cast<const Ipp64f *> (polynomial1.data());
+        auto pSrc2 = reinterpret_cast<const Ipp64f *> (polynomial2.data());
+        auto pDst = reinterpret_cast<Ipp64f *> (result.data());
+        status = ippsConvolve_64f(pSrc1, src1Len, pSrc2, src2Len, pDst,
+                                  implementation, pBuffer);
+        ippsFree(pBuffer);
+        if (status != ippStsNoErr)
+        { 
+            throw std::runtime_error("Failed to compute convolution");
+        }
+        return result;
+    }
+    else if (std::is_same<T, float>::value)
+    {
+        IppStatus status
+            = ippsConvolveGetBufferSize(src1Len, src2Len, ipp32f,
+                                        implementation, &bufferSize);
+        if (status != ippStsNoErr)
+        { 
+            throw std::runtime_error(
+               "Failed to compute double convolution buffer size");
+        } 
+        Ipp8u *pBuffer = ippsMalloc_8u(bufferSize);
+        auto pSrc1 = reinterpret_cast<const Ipp32f *> (polynomial1.data());
+        auto pSrc2 = reinterpret_cast<const Ipp32f *> (polynomial2.data());
+        auto pDst = reinterpret_cast<Ipp32f *> (result.data());
+        status = ippsConvolve_32f(pSrc1, src1Len, pSrc2, src2Len, pDst,
+                                  implementation, pBuffer);
+        ippsFree(pBuffer);
+        if (status != ippStsNoErr)
+        {
+            throw std::runtime_error("Failed to compute convolution");
+        }
+        return result;
+    }
+    else
+    {
+        throw std::runtime_error("Unhandled precision in polynomial multiply");
+    }
+    return result;
+}
+
 ///--------------------------------------------------------------------------///
 ///                             Instantiation                                ///
 ///--------------------------------------------------------------------------///
@@ -286,4 +367,12 @@ template USignal::Vector<double>
    USignal::Utilities::Math::Polynomial::expandToRealCoefficients(const USignal::Vector<std::complex<double>> &);
 template USignal::Vector<float>
    USignal::Utilities::Math::Polynomial::expandToRealCoefficients(const USignal::Vector<std::complex<float>> &);
+
+template USignal::Vector<double>
+USignal::Utilities::Math::Polynomial::multiply(
+    const USignal::Vector<double> &, const USignal::Vector<double> &);
+template USignal::Vector<float>
+USignal::Utilities::Math::Polynomial::multiply(
+    const USignal::Vector<float> &, const USignal::Vector<float> &);
+
 
