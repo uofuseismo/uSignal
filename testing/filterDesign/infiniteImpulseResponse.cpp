@@ -530,7 +530,83 @@ TEST_CASE("Convert lowpass to bandstop")
     }    
 }
 
-TEST_CASE("Design digital butterworth bandpass")
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::Digital::butterworthLowpass")
+{
+    namespace UFD = USignal::FilterDesign::InfiniteImpulseResponse::Digital;
+    namespace UFR = USignal::FilterRepresentations;
+    const int order{9};
+    constexpr double normalizedFrequency{0.1};
+    auto zpk = UFD::createButterworthLowpass(order, normalizedFrequency);
+    UFR::InfiniteImpulseResponse<double> ba(zpk); 
+    auto bs = ba.getNumeratorFilterCoefficients();
+    auto as = ba.getDenominatorFilterCoefficients();
+    USignal::Vector<double> bsRef
+    {   
+        std::vector<double> {0.000000025260,   0.000000227339,
+                             0.000000909357,   0.000002121833,
+                             0.000003182750,   0.000003182750,
+                             0.000002121833,   0.000000909357,
+                             0.000000227339,   0.000000025260}
+    };
+    USignal::Vector<double> asRef
+    {
+        std::vector<double> {1.000000000000,  -7.191438395125,
+                             23.136179228821, -43.681913446689,
+                             53.315329241295, -43.608590547581,
+                             23.895557703800,  -8.456015196801,
+                             1.753099824111,   -0.162195478751}
+    };
+    REQUIRE(bs.size() == bsRef.size());
+    for (int i = 0; i < static_cast<int> (bs.size()); ++i)
+    {
+        CHECK(Catch::Approx(bs.at(i)).margin(1.e-9) == bsRef.at(i));
+    }
+    REQUIRE(as.size() == asRef.size());
+    for (int i = 0; i < static_cast<int> (as.size()); ++i)
+    {
+        CHECK(Catch::Approx(as.at(i)).margin(1.e-9) == asRef.at(i));
+    }
+}
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::Digital::butterworthHighpass")
+{
+    namespace UFD = USignal::FilterDesign::InfiniteImpulseResponse::Digital;
+    namespace UFR = USignal::FilterRepresentations;
+    const int order{9};
+    constexpr double normalizedFrequency{0.1};
+    auto zpk = UFD::createButterworthHighpass(order, normalizedFrequency);
+    UFR::InfiniteImpulseResponse<double> ba(zpk); 
+    auto bs = ba.getNumeratorFilterCoefficients();
+    auto as = ba.getDenominatorFilterCoefficients();
+    USignal::Vector<double> bsRef
+    {   
+        std::vector<double> {0.402734998170,  -3.624614983529,
+                             14.498459934115, -33.829739846269,
+                             50.744609769404, -50.744609769404,
+                             33.829739846269, -14.498459934115,
+                             3.624614983529,  -0.402734998170}
+    };  
+    USignal::Vector<double> asRef
+    {   
+        std::vector<double> {1.000000000000,  -7.191438395125,
+                             23.136179228821, -43.681913446689,
+                             53.315329241295, -43.608590547581,
+                             23.895557703800,  -8.456015196801,
+                             1.753099824111,  -0.162195478751}
+    };  
+    REQUIRE(bs.size() == bsRef.size());
+    for (int i = 0; i < static_cast<int> (bs.size()); ++i)
+    {   
+        CHECK(Catch::Approx(bs.at(i)).margin(1.e-9) == bsRef.at(i));
+    }   
+    REQUIRE(as.size() == asRef.size());
+    for (int i = 0; i < static_cast<int> (as.size()); ++i)
+    {   
+        CHECK(Catch::Approx(as.at(i)).margin(1.e-9) == asRef.at(i));
+    }   
+}
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::Digital::butterworthBandpass")
 {
     namespace UFD = USignal::FilterDesign::InfiniteImpulseResponse::Digital;
     namespace UFR = USignal::FilterRepresentations;
@@ -577,3 +653,52 @@ TEST_CASE("Design digital butterworth bandpass")
         CHECK(Catch::Approx(as.at(i)).margin(1.e-9) == asRef.at(i));
     }                            
 }
+
+TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::Digital::butterworthBandstop")
+{
+    namespace UFD = USignal::FilterDesign::InfiniteImpulseResponse::Digital;
+    namespace UFR = USignal::FilterRepresentations;
+    const int order{9};
+    constexpr std::pair<double, double> normalizedFrequencies(0.2, 0.6);
+    auto zpk = UFD::createButterworthBandstop(order, normalizedFrequencies);
+    UFR::InfiniteImpulseResponse<double> ba(zpk); 
+    auto bs = ba.getNumeratorFilterCoefficients();
+    auto as = ba.getDenominatorFilterCoefficients();
+    USignal::Vector<double> bsRef
+    {   
+        std::vector<double> {0.018886917953,  -0.129854892873,
+                             0.566783505349,  -1.746140555257,
+                             4.268033050318,  -8.498908785998,
+                             14.287136169364, -20.461288100967,
+                             25.338462554529, -27.159003561885,
+                             25.338462554529, -20.461288100967,
+                             14.287136169364,  -8.498908785998,
+                             4.268033050318,  -1.746140555257,
+                             0.566783505349,  -0.129854892873,
+                             0.018886917953}
+    };  
+    USignal::Vector<double> asRef
+    {   
+        std::vector<double> {1.000000000000,  -4.122017284406,
+                             9.504415355480, -15.991234305338,
+                             22.198678051760, -26.228218162255,
+                             26.787904695666, -23.899415459351,
+                             18.869452192123, -13.188721760666,
+                             8.151696207860,  -4.434500672759,
+                             2.117697034965,  -0.874531051117,
+                             0.307669850093,  -0.089310128165,
+                             0.020735426453,  -0.003439408018,
+                             0.000355580604}
+    };  
+    REQUIRE(bs.size() == bsRef.size());
+    for (int i = 0; i < static_cast<int> (bs.size()); ++i)
+    {
+        CHECK(Catch::Approx(bs.at(i)).margin(1.e-9) == bsRef.at(i));
+    }
+    REQUIRE(as.size() == asRef.size());
+    for (int i = 0; i < static_cast<int> (as.size()); ++i)
+    {
+        CHECK(Catch::Approx(as.at(i)).margin(1.e-9) == asRef.at(i));
+    }
+}
+
