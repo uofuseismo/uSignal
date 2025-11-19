@@ -2,6 +2,7 @@
 #include <complex>
 #include <cmath>
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
+#include "uSignal/filterRepresentations/secondOrderSections.hpp"
 #include "uSignal/vector.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
@@ -139,6 +140,92 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::InfiniteImpulseResponse",
         CHECK(std::abs(aRef[1] - a[1]) < 1.e-5);
         CHECK(std::abs(aRef[2] - a[2]) < 1.e-1);
         //CHECK(std::abs(aRef[8] - a[8]) < 100);
+    }
+
+    SECTION("From SOS")
+    {
+        constexpr TestType tol{std::numeric_limits<TestType>::epsilon()*10};
+        USignal::Vector<TestType> bsos{
+           std::vector<TestType> {0.004526395935028797,
+                                  0.00014750633913659776,
+                                  0.0045263959350287965,
+                                  1.0,
+                                 -1.4788487198870026,
+                                  0.9999999999999998,
+                                  1.0,
+                                 -1.6811533464064292,
+                                  0.9999999999999998}};
+        USignal::Vector<TestType> asos{
+            std::vector<TestType> {1.0,
+                                  -1.4435099856969689,
+                                   0.5330631663568415,
+                                   1.0,
+                                  -1.592379063223201,
+                                   0.7103855073905976,
+                                   1.0,
+                                  -1.7618445735292778,
+                                   0.9065253520577573}};
+        USignal::Vector<TestType> bsRef{
+            std::vector<TestType> {0.004526395935028797,
+                                  -0.014155914168416592,
+                                   0.024366463923529605,  
+                                  -0.027945102284198234,
+                                   0.0243664639235296,
+                                  -0.014155914168416587,
+                                   0.004526395935028795}};
+        USignal::Vector<TestType> asRef{
+            std::vector<TestType> {1.0,
+                                  -4.797733622449448,
+                                   9.797353751259633,
+                                 -10.866963389456254,
+                                   6.891853669132939,
+                                  -2.366264779073007,
+                                   0.3432833357007043}};
+/*
+        USignal::Vector<TestType> bsos{
+           std::vector<TestType> {0.01049013148653789,
+                                  0.010754403098248606,
+                                  0.010490131486537888,
+                                  1.0,
+                                 -0.5924306012878766,
+                                  1.0}};
+        USignal::Vector<TestType> asos{
+            std::vector<TestType> {1.0,
+                                  -1.217667822786263,
+                                   0.39621705405335456,
+                                   1.0,
+                                  -1.4784771710316638,
+                                   0.7286820444923836}};
+        USignal::Vector<TestType> bsRef{
+            std::vector<TestType> {0.01049013148653789,
+                                   0.004539728194090077,
+                                   0.014609025479088152,
+                                   0.004539728194090079,
+                                   0.010490131486537888}};
+        USignal::Vector<TestType> asRef{
+            std::vector<TestType> {1.0,
+                                  -2.696144993817927,
+                                   2.925193176435058,
+                                  -1.473090547811787,
+                                   0.28871625301034765}};
+*/
+        USignal::FilterRepresentations::SecondOrderSections<TestType>
+            sos{bsos, asos};
+        USignal::FilterRepresentations::InfiniteImpulseResponse<TestType> ba{sos};
+        auto bs = ba.getNumeratorFilterCoefficients();
+        auto as = ba.getDenominatorFilterCoefficients();
+        REQUIRE(bs.size() == bsRef.size());
+        for (int i = 0; i < static_cast<int> (bs.size()); ++i)
+        {
+            //auto residual = std::abs(bsRef.at(i) - bs.at(i));
+            CHECK(std::abs(bsRef.at(i) - bs.at(i)) < tol);
+        } 
+        REQUIRE(as.size() == asRef.size());
+        for (int i = 0; i < static_cast<int> (as.size()); ++i)
+        {
+            //auto residual = std::abs(asRef.at(i) - as.at(i));
+            CHECK(std::abs(asRef.at(i) - as.at(i)) < tol);
+        }
     }
 }
 

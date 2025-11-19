@@ -1,5 +1,6 @@
 #include <iostream>
 #include <complex>
+#include <algorithm>
 #include "uSignal/filterRepresentations/infiniteImpulseResponse.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/filterRepresentations/secondOrderSections.hpp"
@@ -12,7 +13,7 @@ namespace
 {
 
 template<typename T>
-USignal::Vector<T> expandSOS(
+USignal::Vector<T> expandSOSNumerator(
     const USignal::Vector<T> &coeffs)
 {
     if (coeffs.empty())
@@ -24,19 +25,54 @@ USignal::Vector<T> expandSOS(
         throw std::invalid_argument("Coeffs must be divisible by 3");
     }
     auto nSections = static_cast<int> (coeffs.size()/3);
-    // Initialize 
+    // Initialize (b_0 + b_1 z + b_2 z^2)
+    constexpr T zero{0};
+    USignal::Vector<T> result(3, zero);
+    std::reverse_copy(coeffs.begin(), coeffs.begin() + 3, result.begin());
+    // Expand it out via convolution
+    for (int is = 1; is < nSections; ++is)
+    { 
+        USignal::Vector<T> temp(3, zero);
+        auto i1 = is*3;
+        auto i2 = (is + 1)*3;
+        // Multiply (b_[s,0] + b_[s,1] z + b_s[s,2]^2)
+        std::reverse_copy(coeffs.begin() + i1, coeffs.begin() + i2,
+                          temp.begin());
+        result = USignal::Utilities::Math::Polynomial::multiply(temp, result);
+    } 
+    std::reverse_copy(result.begin(), result.end(), result.begin());
+    return result;
+}
+
+template<typename T>
+USignal::Vector<T> expandSOSDenominator(
+    const USignal::Vector<T> &coeffs)
+{
+    if (coeffs.empty())
+    {
+        throw std::invalid_argument("Coefficients are empty");
+    }
+    if (coeffs.size()%3 != 0)
+    {
+        throw std::invalid_argument("Coeffs must be divisible by 3");
+    }
+    auto nSections = static_cast<int> (coeffs.size()/3);
+    // Initialize (a_0 z^2 + a_1 z + a_2 z)
     constexpr T zero{0};
     USignal::Vector<T> result(3, zero);
     std::copy(coeffs.begin(), coeffs.begin() + 3, result.begin());
     // Expand it out via convolution
     for (int is = 1; is < nSections; ++is)
-    { 
+    {
         USignal::Vector<T> temp(3, zero);
-        std::copy(coeffs.begin() + 3*is, 
-                  coeffs.begin() + 3*(is + 1),
-                  temp.begin());
-        result = USignal::Utilities::Math::Polynomial::multiply(result, temp);
-    } 
+        auto i1 = is*3;
+        auto i2 = (is + 1)*3;
+        // Multiply (a_[s,0] z^2 + a_[s,1] z + a_s[s,2])
+        std::copy(coeffs.begin() + i1, coeffs.begin() + i2,
+                          temp.begin());
+        result = USignal::Utilities::Math::Polynomial::multiply(temp, result);
+    }
+    std::copy(result.begin(), result.end(), result.begin());
     return result;
 }
 
@@ -132,8 +168,10 @@ InfiniteImpulseResponse<T>::InfiniteImpulseResponse(
     {
         throw std::invalid_argument("as length not divisible by 3");
     }
-    auto expandedNumeratorCoefficients = ::expandSOS(numeratorCoefficients);
-    auto expandedDenominatorCoefficients = ::expandSOS(denominatorCoefficients);
+    auto expandedNumeratorCoefficients
+        = ::expandSOSNumerator(numeratorCoefficients);
+    auto expandedDenominatorCoefficients
+        = ::expandSOSDenominator(denominatorCoefficients);
     pImpl = std::make_unique<InfiniteImpulseResponseImpl> ();
     pImpl->mNumeratorCoefficients
          = std::move(expandedNumeratorCoefficients);

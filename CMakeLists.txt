@@ -20,7 +20,7 @@ find_package(Boost COMPONENTS headers REQUIRED)
 #set(MKL_LINK intel64)
 find_package(MKL)
 find_package(Threads REQUIRED)
-#find_package(OpenMP REQUIRED)
+find_package(OpenMP REQUIRED)
 
 if (${IPP_FOUND})
    message("IPP found")
@@ -83,12 +83,12 @@ set(UTILITIES_SRCS
     src/transforms/hilbert/finiteImpulseResponse.cpp)
 set(SRCS ${UTILITIES_SRCS})
 
-#if (${BUILD_SHARED_LIBS})
+if (${BUILD_SHARED_LIBS})
    add_library(libuSignal SHARED ${SRCS})
-#else()
-#   add_library(libuSignal STATIC ${SRCS})
+else()
+   add_library(libuSignal STATIC ${SRCS})
 #   set_target_properties(libuSignal PROPERTIES POSITION_INDEPENDENT_CODE FALSE)
-#endif()
+endif()
 add_library(uSignal::libuSignal ALIAS libuSignal)
 target_sources(libuSignal
                PUBLIC
@@ -128,7 +128,7 @@ target_include_directories(libuSignal
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
                            PUBLIC  $<INSTALL_INTERFACE:/install>)
 target_link_libraries(libuSignal
-                      #PUBLIC OpenMP::OpenMP_CXX
+                      PUBLIC OpenMP::OpenMP_CXX
                       PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers Threads::Threads)
 set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
@@ -162,7 +162,7 @@ set_target_properties(coreTests PROPERTIES
                       CXX_STANDARD_REQUIRED YES 
                       CXX_EXTENSIONS NO)
 target_link_libraries(coreTests
-                      #PUBLIC OpenMP::OpenMP_CXX
+                      PUBLIC OpenMP::OpenMP_CXX
                       PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
 target_include_directories(coreTests
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>

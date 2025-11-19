@@ -25,6 +25,10 @@ public:
     /// @brief Filters the signal.
     void apply() final;
 
+    /// @brief Resets the delay lines to the initial conditions.
+    void resetInitialConditions();
+
+    /// @brief Destructor.
     ~SecondOrderSections() override;
 
     SecondOrderSections() = delete;

@@ -75,6 +75,22 @@ public:
         }
         mInitialized = true;
     }
+    /// Sets the intiial conditions
+    void setInitialConditions(const USignal::Vector<double> &zi)
+    {
+        if (zi.size() != mInitialConditions.size())
+        {
+            throw std::invalid_argument("Initial conditions length " 
+                                      + std::to_string(zi.size())
+                                      + " must equal "
+                                      + std::to_string(
+                                          mInitialConditions.size()));
+        }
+        std::copy(zi.begin(), zi.end(), mInitialConditions.begin());
+        std::copy(mInitialConditions.begin(),
+                  mInitialConditions.end(),
+                  pDelaySource); 
+    } 
     /// Reset the initial conditions
     void resetInitialConditions() noexcept
     {
@@ -225,6 +241,28 @@ public:
     ~SecondOrderSectionsImpl()
     {   
         releaseMemory();
+    } 
+    /// Sets the intiial conditions
+    void setInitialConditions(const USignal::Vector<double> &zi)
+    {   
+        if (zi.size() != mInitialConditions.size())
+        {
+            throw std::invalid_argument("Initial conditions length " 
+                                      + std::to_string(zi.size())
+                                      + " must equal "
+                                      + std::to_string(
+                                          mInitialConditions.size()));
+        }
+        std::copy(zi.begin(), zi.end(), mInitialConditions.begin());
+        std::copy(mInitialConditions.begin(),
+                  mInitialConditions.end(),
+                  pDelaySource); 
+    }   
+    /// Reset the initial conditions
+    void resetInitialConditions() noexcept
+    {   
+        std::copy(mInitialConditions.begin(), mInitialConditions.end(),
+                  pDelaySource);
     }   
     /// Release memory
     void releaseMemory() noexcept
@@ -331,6 +369,14 @@ void SecondOrderSections<T>::apply()
     y.resize(x.size());
     pImpl->apply(x, &y);
     this->setOutput(std::move(y));
+}
+
+/// Reset the initial conditions
+template<class T>
+void SecondOrderSections<T>::resetInitialConditions()
+{
+    if (!isInitialized()){throw std::runtime_error("Class not initialized");}
+    pImpl->resetInitialConditions();
 }
 
 /// Destructor
