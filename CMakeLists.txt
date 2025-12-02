@@ -62,6 +62,7 @@ set(UTILITIES_SRCS
     src/vector.cpp
     src/demean.cpp
     src/taper.cpp
+    src/waterLevelTrigger.cpp
     src/window.cpp
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
@@ -154,6 +155,7 @@ add_executable(coreTests
                testing/transforms/fourier.cpp
                testing/transforms/hilbert.cpp
                testing/utilities/demean.cpp
+               testing/utilities/waterLevelTrigger.cpp
                testing/utilities/window.cpp
                testing/utilities/taper.cpp
 )

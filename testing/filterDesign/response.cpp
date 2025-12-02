@@ -173,6 +173,73 @@ TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalResponse",
     }   
 }
 
+TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalAmplitudeSpectrum",
+                   "[TypeName][template]",
+                   double, float)
+{
+    Vector<TestType> bz( 
+        std::vector<TestType> {0.056340000000000, -0.000935244000000,
+                              -0.000935244000000,  0.056340000000000} );
+    Vector<TestType> az( 
+        std::vector<TestType> {1.000000000000000, -2.129100000000000,
+                               1.783386300000000, -0.543463100000000} );
+    constexpr int nFrequencies{41};
+    const double df = (M_PI - 0)/static_cast<double> (nFrequencies - 1);
+    USignal::Vector<TestType> frequencies(nFrequencies);
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        frequencies[i] = static_cast<TestType> (0 + static_cast<double> (i)*df);
+    }
+    USignal::FilterRepresentations::InfiniteImpulseResponse iir{bz, az};
+    auto h
+         = USignal::FilterDesign::Response::computeDigital(iir, frequencies);
+    auto ampSpectrum
+         = USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum
+           (iir, frequencies);
+    REQUIRE(h.size() == nFrequencies);
+    REQUIRE(ampSpectrum.size() == h.size());
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        TestType residual = std::abs( std::abs(h.at(i)) - ampSpectrum.at(i) );
+        CHECK(Catch::Approx(0).margin(
+                std::numeric_limits<TestType>::epsilon()*100) == residual);
+    }
+}
+
+TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalPhaseSpectrum",
+                   "[TypeName][template]",
+                   double, float)
+{
+    Vector<TestType> bz( 
+        std::vector<TestType> {0.056340000000000, -0.000935244000000,
+                              -0.000935244000000,  0.056340000000000} );
+    Vector<TestType> az( 
+        std::vector<TestType> {1.000000000000000, -2.129100000000000,
+                               1.783386300000000, -0.543463100000000} );
+    constexpr int nFrequencies{41};
+    const double df = (M_PI - 0)/static_cast<double> (nFrequencies - 1); 
+    USignal::Vector<TestType> frequencies(nFrequencies);
+    for (int i = 0; i < nFrequencies; ++i)
+    {   
+        frequencies[i] = static_cast<TestType> (0 + static_cast<double> (i)*df);
+    }   
+    USignal::FilterRepresentations::InfiniteImpulseResponse iir{bz, az};
+    auto h
+         = USignal::FilterDesign::Response::computeDigital(iir, frequencies);
+    auto phaseSpectrum
+         = USignal::FilterDesign::Response::computeDigitalPhaseSpectrum
+           (iir, frequencies);
+    REQUIRE(h.size() == nFrequencies);
+    REQUIRE(phaseSpectrum.size() == h.size());
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        auto angle = std::atan2( std::imag(h.at(i)), std::real(h.at(i)) );
+        TestType residual = std::abs( angle - phaseSpectrum.at(i) );
+        CHECK(Catch::Approx(0).margin(
+                std::numeric_limits<TestType>::epsilon()*100) == residual);
+    }
+}
+
 TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalResponse::FIR",
                    "[TypeName][template]",
                    double, float)
@@ -204,4 +271,91 @@ TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::DigitalResponse::FIR",
                  std::numeric_limits<TestType>::epsilon()*100) == residual);
     }
 }
+
+TEMPLATE_TEST_CASE("CoreTest::FilterDesign::Response::unwrapPhase",
+                   "[TypeName][template]",
+                   double, float)
+{
+    Vector<TestType> phases( 
+        std::vector<TestType> {0, -1.5728, -1.5747, -1.5772, -1.5790,
+                              -1.5816, -1.5852, -1.5877, -1.5922,
+                              -1.5976, -1.6044, -1.6129, -1.6269,
+                              -1.6512, -1.6998, -1.8621,  1.7252,
+                               1.6124,  1.5930,  1.5916,  1.5708,
+                               1.5708,  1.5708}
+    );
+    SECTION("Tolerance pi")
+    {
+        USignal::Vector<TestType> reference(
+            std::vector<TestType> {0.00000,  -1.57280,  -1.57470,  -1.57720,
+                                  -1.57900,  -1.58160,  -1.58520,  -1.58770,
+                                  -1.59220,  -1.59760,  -1.60440,  -1.61290,
+                                  -1.62690,  -1.65120,  -1.69980,  -1.86210,
+                                  -4.557985307179586,  -4.670785307179586,
+                                  -4.690185307179586,  -4.691585307179587,
+                                  -4.712385307179586,  -4.712385307179586,
+                                  -4.712385307179586}
+        );
+        constexpr TestType tolerance{M_PI};
+        auto unwrappedPhases
+            = USignal::FilterDesign::Response::unwrapPhase(phases, tolerance);
+        REQUIRE(unwrappedPhases.size() == reference.size());
+        for (int i = 0; i < static_cast<int> (reference.size()); ++i)
+        {
+            auto residual = std::abs(reference.at(i) - unwrappedPhases.at(i)); 
+            REQUIRE(Catch::Approx(0).margin(
+                    std::numeric_limits<TestType>::epsilon()*100) == residual);
+            // kludgy to way to ensure unwrapping phase doesn't destroy trig fns
+            auto sineResidual = std::abs(std::sin(phases.at(i))
+                                       - std::sin(unwrappedPhases.at(i)));
+            REQUIRE(Catch::Approx(0).margin(
+                    std::numeric_limits<TestType>::epsilon()*100) == sineResidual);
+            // std::cout << i << " " << unwrappedPhases[i] << " " << reference.at(i) << " "
+            //<< std::sin(phases[i]) << " " << std::sin(unwrappedPhases[i]) << std::endl;
+        }
+
+    }
+    SECTION("Tolerance pi/2")
+    {
+        USignal::Vector<TestType> reference(
+            std::vector<TestType> {1.000000000000000,  -3.710385307179586,
+                                  -3.708485307179586,  -3.705985307179586,
+                                  -3.704185307179586,  -3.701585307179586,
+                                  -3.697985307179586,  -3.695485307179586,
+                                  -3.690985307179586,  -3.685585307179586,
+                                  -3.678785307179586,  -3.670285307179586,
+                                  -3.656285307179586,  -3.631985307179586,
+                                  -3.583385307179586,  -3.421085307179586,
+                                  -0.725200000000000,  -0.612400000000000,
+                                  -0.593000000000000,  -0.591600000000000,
+                                  -0.570800000000000,  -0.570800000000000,
+                                  -0.570800000000000}
+        );
+        std::transform(phases.begin(), phases.end(), phases.begin(),
+                       [](const auto p)
+                       {
+                          return -p + 1;
+                       }); 
+        constexpr TestType tolerance{M_PI/2};
+        auto unwrappedPhases
+            = USignal::FilterDesign::Response::unwrapPhase(phases, tolerance);  
+        REQUIRE(unwrappedPhases.size() == reference.size());
+        for (int i = 0; i < static_cast<int> (reference.size()); ++i)
+        {
+            auto residual = std::abs(reference.at(i) - unwrappedPhases.at(i)); 
+            REQUIRE(Catch::Approx(0).margin(
+                    std::numeric_limits<TestType>::epsilon()*100) == residual);
+            // kludgy to way to ensure unwrapping phase doesn't destroy trig fns
+            auto sineResidual = std::abs(std::sin(phases.at(i))
+                                       - std::sin(unwrappedPhases.at(i)));
+            REQUIRE(Catch::Approx(0).margin(
+                    std::numeric_limits<TestType>::epsilon()*100) == sineResidual);
+            //std::cout << i << " " << unwrappedPhases[i] << " " << reference.at(i) << " " 
+            // << std::sin(phases[i]) << " " << std::sin(unwrappedPhases[i]) << std::endl;
+
+        }
+
+    }
+}
+
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <numeric>
 #include <algorithm>
 #include <execution>
 #ifndef NDEBUG
@@ -110,6 +111,42 @@ void computeTransferFunction(
     std::copy(std::execution::unseq,
                hnPtr, hnPtr + hNumerator.size(), 
                rPtr);
+}
+
+template<typename T> USignal::Vector<T>
+computeMagnitude(
+    const USignal::Vector<std::complex<T>> &complexSpectrum)
+{
+    auto nFrequencies = static_cast<int> (complexSpectrum.size());
+    constexpr T zero{0};
+    USignal::Vector<T> amplitudeSpectrum(nFrequencies, zero);
+    const auto complexSpectrumPtr
+        = std::assume_aligned<ALIGNMENT> (complexSpectrum.data());
+    auto amplitudeSpectrumPtr
+        = std::assume_aligned<ALIGNMENT> (amplitudeSpectrum.data());
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        amplitudeSpectrumPtr[i] = std::abs(complexSpectrumPtr[i]);
+    }
+    return amplitudeSpectrum;
+}
+
+template<typename T> USignal::Vector<T>
+computeArgument(
+    const USignal::Vector<std::complex<T>> &complexSpectrum)
+{
+    auto nFrequencies = static_cast<int> (complexSpectrum.size());
+    constexpr T zero{0};
+    USignal::Vector<T> phaseSpectrum(nFrequencies, zero);
+    const auto complexSpectrumPtr
+        = std::assume_aligned<ALIGNMENT> (complexSpectrum.data());
+    auto phaseSpectrumPtr
+        = std::assume_aligned<ALIGNMENT> (phaseSpectrum.data());
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        phaseSpectrumPtr[i] = std::arg(complexSpectrumPtr[i]);
+    }
+    return phaseSpectrum;
 }
 
 }
@@ -268,6 +305,94 @@ USignal::FilterDesign::Response::computeDigital(
     return response;
 }
 
+template<typename T>
+USignal::Vector<T>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<T> &filter,
+        const USignal::Vector<T> &frequencies)
+{
+    auto complexSpectrum = computeDigital(filter, frequencies);
+    return ::computeMagnitude<T>(complexSpectrum);
+}
+
+template<typename T>
+USignal::Vector<T>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<T> &filter,
+        const USignal::Vector<T> &frequencies)
+{
+    auto complexSpectrum = computeDigital(filter, frequencies);
+    return ::computeMagnitude(complexSpectrum);
+}
+
+template<typename T>
+USignal::Vector<T>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<T> &filter,
+        const USignal::Vector<T> &frequencies)
+{   
+    auto complexSpectrum = computeDigital(filter, frequencies);
+    return ::computeArgument(complexSpectrum);
+}
+
+template<typename T>
+USignal::Vector<T>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<T> &filter,
+        const USignal::Vector<T> &frequencies)
+{
+    auto complexSpectrum = computeDigital(filter, frequencies);
+    return ::computeArgument(complexSpectrum);
+}
+
+template<typename T> USignal::Vector<T>
+USignal::FilterDesign::Response::unwrapPhase(
+    const USignal::Vector<T> &phaseAngles, const T tolerance)
+{
+    if (tolerance < 0)
+    {   
+        throw std::invalid_argument("Tolerance "
+                                  + std::to_string(tolerance)
+                                  + " cannot be negative");
+    }   
+    auto nFrequencies = static_cast<int> (phaseAngles.size());
+    USignal::Vector<T> result = phaseAngles;
+    if (result.empty()){return result;}
+    T minimumAngle
+        = *std::min_element(phaseAngles.begin(), phaseAngles.end());
+    std::transform(phaseAngles.begin(), phaseAngles.end(), 
+                   result.begin(),
+                   [&](const auto phase)
+                   {
+                       constexpr T twopi{2*M_PI};
+                       T dPhase = phase - minimumAngle;
+                       T remainder = dPhase
+                                   - twopi*(std::trunc(dPhase/twopi));
+                       return remainder + minimumAngle;
+                   });
+    // Differentiate phases
+    USignal::Vector<T> differentiatedPhases(nFrequencies);
+    std::adjacent_difference(result.begin(), result.end(), 
+                             differentiatedPhases.begin());
+    // Integrate
+    T cumulativeSum{0};
+    for (int i = 0; i < nFrequencies; ++i)
+    {
+        int ic = 0;
+        if (differentiatedPhases[i] > tolerance){ic =-1;}
+        int id = 0;
+        if (differentiatedPhases[i] <-tolerance){id = 1;} 
+        // 2*pi jumps
+        constexpr T twopi{2*M_PI};
+        T e = twopi*static_cast<T> (ic + id);
+        // Integrate to get corrections
+        cumulativeSum = cumulativeSum + e;
+        result[i] = result[i] + cumulativeSum;
+    }    
+    return result; 
+}
+
+
 ///--------------------------------------------------------------------------///
 ///                             Instantiation                                ///
 ///--------------------------------------------------------------------------///
@@ -299,4 +424,57 @@ template USignal::Vector<std::complex<float>>
 USignal::FilterDesign::Response::computeDigital(
     const USignal::FilterRepresentations::FiniteImpulseResponse<float> &,
     const USignal::Vector<float> &); 
+
+template
+USignal::Vector<double>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<double> &,
+        const USignal::Vector<double> &); 
+template
+USignal::Vector<float>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<float> &,
+        const USignal::Vector<float> &); 
+
+template
+USignal::Vector<double>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<double> &,
+        const USignal::Vector<double> &);
+template
+USignal::Vector<float>
+USignal::FilterDesign::Response::computeDigitalAmplitudeSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<float> &,
+        const USignal::Vector<float> &);
+
+template
+USignal::Vector<double>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<double> &,
+        const USignal::Vector<double> &); 
+template
+USignal::Vector<float>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::InfiniteImpulseResponse<float> &,
+        const USignal::Vector<float> &); 
+
+template
+USignal::Vector<double>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<double> &,
+        const USignal::Vector<double> &); 
+template
+USignal::Vector<float>
+USignal::FilterDesign::Response::computeDigitalPhaseSpectrum(
+        const USignal::FilterRepresentations::FiniteImpulseResponse<float> &,
+        const USignal::Vector<float> &); 
+
+template
+USignal::Vector<double>
+USignal::FilterDesign::Response::unwrapPhase(
+        const USignal::Vector<double> &, const double ); 
+template
+USignal::Vector<float>
+USignal::FilterDesign::Response::unwrapPhase(
+        const USignal::Vector<float> &, const float ); 
 
