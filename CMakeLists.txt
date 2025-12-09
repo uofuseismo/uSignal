@@ -66,6 +66,7 @@ set(UTILITIES_SRCS
     src/window.cpp
     src/utilities/version.cpp
     src/utilities/math/polynomial.cpp
+    src/utilities/interpolation/weightedAverageSlopes.cpp
     src/filterDesign/response.cpp
     src/filterDesign/finiteImpulseResponse/hilbertTransformer.cpp
     src/filterDesign/finiteImpulseResponse/windowBased.cpp
