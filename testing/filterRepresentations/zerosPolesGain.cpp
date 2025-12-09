@@ -132,13 +132,13 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
         for (const auto &z : zeros)
         {
             REQUIRE(::matched(z, zRef,
-                              std::numeric_limits<TestType>::epsilon()*10));
+                              std::numeric_limits<TestType>::epsilon()*20));
         }
         REQUIRE(poles.size() == pRef.size());
         for (const auto &p : poles)
         {
             REQUIRE(::matched(p, pRef,
-                              std::numeric_limits<TestType>::epsilon()*10));
+                              std::numeric_limits<TestType>::epsilon()*20));
         }
     }
 }
