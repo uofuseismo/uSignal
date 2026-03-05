@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <boost/align.hpp>
+#include <ipp/ipps.h>
 #include "uSignal/vector.hpp"
 #include "src/alignment.hpp"
 
