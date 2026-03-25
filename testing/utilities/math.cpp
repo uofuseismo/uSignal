@@ -83,7 +83,10 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
         p0.push_back( std::complex<TestType> (3,0));
 
         USignal::Vector<std::complex<TestType>>
-            yRef( { 3 + 0i, 3 + 0i, 3 + 0i, 3 + 0i } );
+            yRef( { std::complex<TestType> (3, 0),
+                    std::complex<TestType> (3, 0),
+                    std::complex<TestType> (3, 0), 
+                    std::complex<TestType> (3, 0) } );
         auto y = USignal::Utilities::Math::Polynomial::evaluate(p0, zx);
         constexpr TestType zero{0};
         CHECK(y.size() == yRef.size());
@@ -95,9 +98,14 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
     SECTION("complex linear")
     {
         USignal::Vector<std::complex<TestType>>
-            p1( std::vector<std::complex<TestType>> {3 + 0i, 0 + 2i} );
+            p1( std::vector<std::complex<TestType>> {
+                   std::complex<TestType> (3, 0),
+                   std::complex<TestType> (0, 2)} );
         USignal::Vector<std::complex<TestType>>
-            yRef( {15 + 2i, 0 + 23i, 6 + 29i, 12 - 4i} );
+            yRef( {std::complex<TestType> (15, 2),
+                   std::complex<TestType> (0, 23),
+                   std::complex<TestType> (6, 29),
+                   std::complex<TestType> (12,-4)} );
         auto y = USignal::Utilities::Math::Polynomial::evaluate(p1, zx);
         constexpr TestType zero{0};
         CHECK(y.size() == yRef.size());
@@ -109,9 +117,14 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
     SECTION("complex quadratic")
     {
         USignal::Vector<std::complex<TestType>>
-            p2( {3 + 0i, 0 + 2i, 1 + 0i} );
+            p2( { std::complex<TestType> (3, 0),
+                  std::complex<TestType> (0, 2),
+                  std::complex<TestType> (1, 0)} );
         USignal::Vector<std::complex<TestType>>
-            yRef( {76 + 10i, -160 + 0i, -248 + 112i, 41 - 40i} );
+            yRef( {std::complex<TestType> (76, 10),
+                   std::complex<TestType> (-160, 0),
+                   std::complex<TestType> (-248, 112),
+                   std::complex<TestType> ( 41, -40)} );
         auto y = USignal::Utilities::Math::Polynomial::evaluate(p2, zx);
         constexpr TestType zero{0};
         CHECK(y.size() == yRef.size());
@@ -123,9 +136,15 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
     SECTION("complex cubic")
     {
         USignal::Vector<std::complex<TestType>>
-            p3( {3 + 0i, 0 + 2i, 1 + 0i, 1 - 2i} );
+            p3( {std::complex<TestType> (3, 0),
+                 std::complex<TestType> (0, 2),
+                 std::complex<TestType> (1, 0),
+                 std::complex<TestType> (1,-2)} );
         USignal::Vector<std::complex<TestType>> 
-            yRef( {381 + 48i, 1 - 1122i, -1503 - 2010i, 85 - 244i} );
+            yRef( {std::complex<TestType> (  381, 48),
+                   std::complex<TestType> (    1,-1122),
+                   std::complex<TestType> (-1503,-2010),
+                   std::complex<TestType> (   85,-244)} );
         auto y = USignal::Utilities::Math::Polynomial::evaluate(p3, zx);
         constexpr TestType zero{0};
         CHECK(y.size() == yRef.size());
@@ -137,9 +156,16 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::evaluate",
     SECTION("complex quartic")
     {
         USignal::Vector<std::complex<TestType>>
-             p4( {3 + 0i, 0 + 2i, 1 + 0i, 1 - 2i, -3 + 0i } );
+             p4( {std::complex<TestType> ( 3, 0),
+                  std::complex<TestType> ( 0, 2),
+                  std::complex<TestType> ( 1, 0),
+                  std::complex<TestType> ( 1,-2),
+                  std::complex<TestType> (-3, 0) } );
         USignal::Vector<std::complex<TestType>> 
-            yRef( {1902 + 240i, 7851 + 7i, 15081 - 17547i, -151 - 1146i} );
+            yRef( {std::complex<TestType> (1902, 240),
+                   std::complex<TestType> (7851, 7),
+                   std::complex<TestType> (15081,-17547),
+                   std::complex<TestType> ( -151,-1146)} );
         auto y = USignal::Utilities::Math::Polynomial::evaluate(p4, zx);
         constexpr TestType zero{0};
         CHECK(y.size() == yRef.size());
@@ -164,9 +190,9 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::Roots",
         auto roots = USignal::Utilities::Math::Polynomial::computeRoots(coefficients);
   
         USignal::Vector<std::complex<TestType>> rootsRef(
-               {12.122893784632392  + 0i,
-                -5.7345099422250705 + 0i,
-                -0.3883838424073199 + 0i});
+               {std::complex<TestType> (12.122893784632392, 0),
+                std::complex<TestType> (-5.7345099422250705, 0),
+                std::complex<TestType> (-0.3883838424073199, 0)});
         CHECK(roots.size() == rootsRef.size());
         for (int i = 0; i < static_cast<int> (rootsRef.size()); ++i)
         {
@@ -181,9 +207,9 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::Polynomial::Roots",
         auto roots = USignal::Utilities::Math::Polynomial::computeRoots(coefficients);
 
         USignal::Vector<std::complex<TestType>> rootsRef(
-           {3.1816664666582546 + 8.011804223473874i,
-            3.1816664666582546 - 8.011804223473874i,
-           -0.3633329333165073 + 0i});
+           {std::complex<TestType> ( 3.1816664666582546, 8.011804223473874),
+            std::complex<TestType> ( 3.1816664666582546,-8.011804223473874),
+            std::complex<TestType> (-0.3633329333165073, 0)});
         CHECK(roots.size() == rootsRef.size());
         for (int i = 0; i < static_cast<int> (rootsRef.size()); ++i)
         {
@@ -235,7 +261,7 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ExpandPolynomial",
     SECTION("Edge Case Order 1")
     {
         USignal::Vector<std::complex<TestType>> roots;
-        roots.push_back( -1 + 2i );
+        roots.push_back( std::complex<TestType> (-1, 2) );
         auto coefficients
             = USignal::Utilities::Math::Polynomial::expand(roots);
         REQUIRE(coefficients.size() == 2); 
@@ -248,16 +274,16 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ExpandPolynomial",
     SECTION("Complex Test")
     {
         USignal::Vector<std::complex<TestType>> reference;
-        reference.push_back( 1    + 0i);
-        reference.push_back(-5.3  + 1i);
-        reference.push_back( 6.3  - 5.3i);
-        reference.push_back(-10.6 + 4.3i);
-        reference.push_back( 8.6  + 0i);
+        reference.push_back( std::complex<TestType> (    1, 0) );
+        reference.push_back( std::complex<TestType> ( -5.3, 1) );
+        reference.push_back( std::complex<TestType> (  6.3,-5.3) );
+        reference.push_back( std::complex<TestType> (-10.6, 4.3) );
+        reference.push_back( std::complex<TestType> (  8.6, 0) );
         USignal::Vector<std::complex<TestType>> roots;
-        roots.push_back(1 + 0i);
-        roots.push_back(0 + 1i);
-        roots.push_back(4.3 + 0i);
-        roots.push_back(0 - 2i);
+        roots.push_back( std::complex<TestType> (  1, 0) );
+        roots.push_back( std::complex<TestType> (  0, 1) );
+        roots.push_back( std::complex<TestType> (4.3, 0) );
+        roots.push_back( std::complex<TestType> (  0,-2) );
         auto coefficients
             = USignal::Utilities::Math::Polynomial::expand(roots);
         REQUIRE(coefficients.size() == reference.size());
@@ -271,10 +297,10 @@ TEMPLATE_TEST_CASE("CoreTest::Utilities::Math::ExpandPolynomial",
     {
         USignal::Vector<TestType> reference( { 1., -4.3, -3., 14.9, -8.6} );
         USignal::Vector<std::complex<TestType>> roots;
-        roots.push_back(   1 + 0i);
-        roots.push_back(   1 + 0i);
-        roots.push_back( 4.3 + 0i);
-        roots.push_back(-2.0 + 0i);
+        roots.push_back( std::complex<TestType> (   1, 0));
+        roots.push_back( std::complex<TestType> (   1, 0));
+        roots.push_back( std::complex<TestType> ( 4.3, 0));
+        roots.push_back( std::complex<TestType> (-2.0, 0));
         auto coefficients
             = USignal::Utilities::Math::Polynomial::expandToRealCoefficients(roots);
         REQUIRE(coefficients.size() == reference.size());

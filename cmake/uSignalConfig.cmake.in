@@ -15,9 +15,15 @@
 #   The uSignal library, if found. 
 include(CMakeFindDependencyMacro)
 
-@PACKAGE_INIT@
+find_dependency(MKL)
+find_dependency(IPP)
+find_dependency(TBB)
 
+#@PACKAGE_INIT@
+
+if (NOT TARGET uSignal::@PROJECT_NAME@)
+   include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+endif()
 #if(NOT TARGET uSignal::@PROJECT_NAME@)
-include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
-
+#include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
 #endif()

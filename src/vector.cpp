@@ -3,6 +3,7 @@
 #include <complex>
 #include <cmath>
 #include <vector>
+#include <oneapi/tbb/cache_aligned_allocator.h>
 #include <boost/align.hpp>
 #include <ipp/ipps.h>
 #include "uSignal/vector.hpp"
@@ -23,7 +24,8 @@ public:
         mX(n, value)
     {
     }
-    std::vector<T, boost::alignment::aligned_allocator<T, ALIGNMENT>> mX;
+    std::vector<T, oneapi::tbb::cache_aligned_allocator<T>> mX;
+    //std::vector<T, boost::alignment::aligned_allocator<T, ALIGNMENT>> mX;
     //std::vector<double, boost::alignment::aligned_allocator<double, ALIGNMENT> > vector;
 };
 
@@ -56,6 +58,17 @@ Vector<T>::Vector(const std::vector<T> &v) :
     pImpl->mX.resize(v.size());
     std::copy(v.begin(), v.end(), pImpl->mX.begin()); 
 }
+
+/*
+/// Construct from vector
+template<class T>
+Vector<T>::Vector(std::vector<T> &&v) :
+    pImpl(std::make_unique<VectorImpl> ())
+{
+    pImpl->mX.resize(v.size());
+    std::copy(v.begin(), v.end(), pImpl->mX.begin());
+}
+*/
 
 /// Construct vector of a given size
 template<class T>

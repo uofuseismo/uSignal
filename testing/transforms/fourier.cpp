@@ -47,9 +47,9 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Fourier::Forward::DFT",
         // ft = fft.rfft([1, 2, 3, 4, 5])
         USignal::Vector<TestType> x(std::vector<TestType> {1, 2, 3, 4, 5});
         USignal::Vector<std::complex<TestType>> yRef{
-            std::vector<std::complex<TestType>> { 15  + 0i, 
-                                                 -2.5 + 3.4409548011779334i,
-                                                 -2.5 + 0.8122992405822659i} };
+            std::vector<std::complex<TestType>> { std::complex<TestType> (15, 0), 
+                                                  std::complex<TestType> (-2.5, 3.4409548011779334),
+                                                  std::complex<TestType> (-2.5, 0.8122992405822659)} };
         REQUIRE_NOTHROW(dft.setInput(x));
         REQUIRE_NOTHROW(dft.apply());
         auto result = dft.getOutput();
@@ -65,10 +65,10 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Fourier::Forward::DFT",
         // ft = fft.rfft([1, 2, 3, -1, -2, -3])
         USignal::Vector<TestType> x(std::vector<TestType> {1, 2, 3, -1, -2, -3.1});
         USignal::Vector<std::complex<TestType>> yRef{
-           std::vector<std::complex<TestType>> {-0.09999999999999964 + 0i,
-                                                 0.9500000000000002 - 8.746856578222829i,
-                                                 0.04999999999999982 - 0.0866025403784434i,
-                                                 4.1 + 0i}};
+           std::vector<std::complex<TestType>> { std::complex<TestType> (-0.09999999999999964, 0),
+                                                 std::complex<TestType> (0.9500000000000002,  -8.746856578222829),
+                                                 std::complex<TestType> (0.04999999999999982, -0.0866025403784434),
+                                                 std::complex<TestType> (4.1, 0)}};
         REQUIRE_NOTHROW(dft.setInput(x));
         REQUIRE_NOTHROW(dft.apply());
         auto result = dft.getOutput();
@@ -84,11 +84,11 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Fourier::Forward::DFT",
     {
         USignal::Vector<TestType> x(std::vector<TestType> {1, 2, 3, -1, -2, -3.1, 0, 0});
         USignal::Vector<std::complex<TestType>> yRef{
-           std::vector<std::complex<TestType>> {-0.10000000000000009 + 0i, 
-                                                 7.313351365237939 - 5.8991378028648445i,
-                                                -4 + 0.10000000000000009i,
-                                                 -1.3133513652379394 + 0.1008621971351551i,
-                                                 4.1 + 0i}};
+           std::vector<std::complex<TestType>> { std::complex<TestType> (-0.10000000000000009, 0), 
+                                                 std::complex<TestType> (7.313351365237939,   -5.8991378028648445),
+                                                 std::complex<TestType> (-4,                   0.10000000000000009),
+                                                 std::complex<TestType> (-1.3133513652379394,  0.1008621971351551),
+                                                 std::complex<TestType> (4.1, 0)}};
         REQUIRE_NOTHROW(dft.setInput(x));
         REQUIRE_NOTHROW(dft.apply());
         auto result = dft.getOutput();
@@ -111,11 +111,11 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Fourier::Forward::FFT",
         // ft = fft.rfft([1, 2, 3, -1, -2, -3], 8)
         USignal::Vector<TestType> x(std::vector<TestType> {1, 2, 3, -1, -2, -3.1});
         USignal::Vector<std::complex<TestType>> yRef{
-           std::vector<std::complex<TestType>> {-0.10000000000000009 + 0i,
-                                                 7.313351365237939 - 5.8991378028648445i,
-                                                -4 + 0.10000000000000009i,
-                                                 -1.3133513652379394 + 0.1008621971351551i,
-                                                 4.1 + 0i}};
+           std::vector<std::complex<TestType>> {std::complex<TestType> (-0.10000000000000009, 0),
+                                                std::complex<TestType> (7.313351365237939,   -5.8991378028648445),
+                                                std::complex<TestType> (-4,                   0.10000000000000009),
+                                                std::complex<TestType> (-1.3133513652379394,  0.1008621971351551),
+                                                std::complex<TestType> (4.1, 0) }};
         REQUIRE_NOTHROW(dft.setInput(x));
         REQUIRE_NOTHROW(dft.apply());
         auto result = dft.getOutput();

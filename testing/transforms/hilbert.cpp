@@ -124,7 +124,7 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Hilbert::FiniteImpulseResponse",
         hilbert.apply();
         auto yOutput = hilbert.getOutput();
         REQUIRE(yRef.size() == yOutput.size()); 
-        for (int i = 0; i < yRef.size(); ++i)
+        for (int i = 0; i < static_cast<int> (yRef.size()); ++i)
         {
             auto residual = std::abs(yRef[i] - yOutput[i]);
             CHECK(residual < std::numeric_limits<TestType>::epsilon()*100);
@@ -149,7 +149,7 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Hilbert::FiniteImpulseResponse",
         hilbert.apply();
         auto yOutput = hilbert.getOutput();
         REQUIRE(yRef.size() == yOutput.size()); 
-        for (int i = 0; i < yRef.size(); ++i)
+        for (int i = 0; i < static_cast<int> (yRef.size()); ++i)
         {
             auto residual = std::abs(yRef[i] - yOutput[i]);
             CHECK(residual < std::numeric_limits<TestType>::epsilon()*100);
@@ -196,7 +196,7 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Hilbert::FiniteImpulseResponse",
         }
 
         REQUIRE(yRef.size() == outputSignal.size()); 
-        for (int i = 0; i < yRef.size(); ++i)
+        for (int i = 0; i < static_cast<int> (yRef.size()); ++i)
         {
             auto residual = std::abs(yRef[i] - outputSignal[i]);
             CHECK(residual < std::numeric_limits<TestType>::epsilon()*100);
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE("CoreTest::Transforms::Hilbert::FiniteImpulseResponse",
         }
 
         REQUIRE(yRef.size() == outputSignal.size()); 
-        for (int i = 0; i < yRef.size(); ++i)
+        for (int i = 0; i < static_cast<int> (yRef.size()); ++i)
         {
             auto residual = std::abs(yRef[i] - outputSignal[i]);
             CHECK(residual < std::numeric_limits<TestType>::epsilon()*100);

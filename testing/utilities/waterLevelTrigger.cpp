@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("CoreTest::WaterLevelTrigger",
         trigger.apply();
         auto y = trigger.getOutput();
         REQUIRE(y.size() == offOnReferenceSignal.size()); 
-        for (int i = 0; i < offOnReferenceSignal.size(); ++i)
+        for (int i = 0; i < static_cast<int> (offOnReferenceSignal.size()); ++i)
         {
             CHECK(y.at(i) == offOnReferenceSignal.at(i));
         }
@@ -76,7 +76,7 @@ TEMPLATE_TEST_CASE("CoreTest::WaterLevelTrigger",
         trigger.apply();
         auto y = trigger.getOutput();
         REQUIRE(y.size() == onOffReferenceSignal.size()); 
-        for (int i = 0; i < onOffReferenceSignal.size(); ++i)
+        for (int i = 0; i < static_cast<int> (onOffReferenceSignal.size()); ++i)
         {
             CHECK(y.at(i) == onOffReferenceSignal.at(i));
         }
@@ -117,7 +117,7 @@ TEMPLATE_TEST_CASE("CoreTest::WaterLevelTrigger",
             kStart = kStart + nSamplesInPacket;
             if (kStart >= nSamples){break;}
         }
-        for (int i = 0; i < offOnReferenceSignal.size(); ++i)
+        for (int i = 0; i < static_cast<int> (offOnReferenceSignal.size()); ++i)
         {
             CHECK(outputSignal.at(i) == offOnReferenceSignal.at(i));
         }
@@ -159,7 +159,7 @@ TEMPLATE_TEST_CASE("CoreTest::WaterLevelTrigger",
             kStart = kStart + nSamplesInPacket;
             if (kStart >= nSamples){break;}
         }
-        for (int i = 0; i < onOffReferenceSignal.size(); ++i)
+        for (int i = 0; i < static_cast<int> (onOffReferenceSignal.size()); ++i)
         {
             CHECK(outputSignal.at(i) == onOffReferenceSignal.at(i));
         }

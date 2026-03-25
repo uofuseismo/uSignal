@@ -3,6 +3,7 @@
 #include <complex>
 #include <vector>
 #include <memory>
+#include <oneapi/tbb/cache_aligned_allocator.h>
 #include <boost/align.hpp>
 namespace USignal
 {
@@ -13,7 +14,8 @@ template<class T = double>
 class Vector
 {
 private:
-    using DataTypeT = std::vector<T, boost::alignment::aligned_allocator<T, 64>>;
+    using DataTypeT = std::vector<T, oneapi::tbb::cache_aligned_allocator<T>>;
+    //using DataTypeT = std::vector<T, boost::alignment::aligned_allocator<T, 64>>;
 public:
     using iterator = typename DataTypeT::iterator;
     using const_iterator = typename DataTypeT::const_iterator;

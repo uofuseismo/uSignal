@@ -7,20 +7,21 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 #option(WRAP_PYTHON "Compile the Python bindings" OFF)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 include(CheckCXXCompilerFlag)
+#include(CheckPIESupported)
 
 #if (${WRAP_PYTHON})
 #   message("Will build Python bindings")
 #   find_package(pybind11 REQUIRED)
 #endif()
 find_package(Catch2 3 REQUIRED)
-find_package(IPP)
+find_package(IPP COMPONENTS ippcore ipps ippvm)
 find_package(Boost COMPONENTS headers REQUIRED)
-#find_package(FindIPP REQUIRED)
 #set(MKL_INTERFACE lp64)
 #set(MKL_LINK intel64)
-find_package(MKL)
+find_package(TBB COMPONENTS tbb tbbmalloc REQUIRED)
+find_package(MKL CONFIG REQUIRED)
 find_package(Threads REQUIRED)
-find_package(OpenMP REQUIRED)
+#find_package(OpenMP REQUIRED)
 
 if (${IPP_FOUND})
    message("IPP found")
@@ -89,6 +90,7 @@ if (${BUILD_SHARED_LIBS})
    add_library(libuSignal SHARED ${SRCS})
 else()
    add_library(libuSignal STATIC ${SRCS})
+   #set_target_properties(libuSignal PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 #   set_target_properties(libuSignal PROPERTIES POSITION_INDEPENDENT_CODE FALSE)
 endif()
 add_library(uSignal::libuSignal ALIAS libuSignal)
@@ -130,13 +132,16 @@ target_include_directories(libuSignal
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
                            PUBLIC  $<INSTALL_INTERFACE:/install>)
 target_link_libraries(libuSignal
-                      PUBLIC OpenMP::OpenMP_CXX
-                      PRIVATE MKL::MKL ${IPP_LIBRARIES} Boost::headers Threads::Threads)
+                      #PUBLIC OpenMP::OpenMP_CXX
+                      PUBLIC TBB::tbb TBB::tbbmalloc
+                      PUBLIC MKL::MKL IPP::ippcore IPP::ipps IPP::ippvm
+                      PRIVATE Boost::headers Threads::Threads)
 set_target_properties(libuSignal PROPERTIES
                       CXX_STANDARD 20
                       CXX_STANDARD_REQUIRED YES 
                       CXX_EXTENSIONS NO
-                      OUTPUT_NAME uSignal)
+                      OUTPUT_NAME uSignal 
+                      POSITION_INDEPENDENT_CODE TRUE)
 
 #########################################################################################
 #                                        Unit Tests                                     #
@@ -165,7 +170,8 @@ set_target_properties(coreTests PROPERTIES
                       CXX_STANDARD_REQUIRED YES 
                       CXX_EXTENSIONS NO)
 target_link_libraries(coreTests
-                      PUBLIC OpenMP::OpenMP_CXX
+                      #PUBLIC OpenMP::OpenMP_CXX
+                      PUBLIC TBB::tbb TBB::tbbmalloc
                       PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
 target_include_directories(coreTests
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
@@ -206,6 +212,7 @@ install(TARGETS libuSignal
 #install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/uSignal
 #        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 export(EXPORT ${PROJECT_NAME}-targets
+       NAMESPACE uSignal::
        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 install(EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}Targets.cmake
