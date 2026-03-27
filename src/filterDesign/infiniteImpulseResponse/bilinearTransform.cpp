@@ -26,7 +26,7 @@ std::complex<double> computeGain(const USignal::Vector<std::complex<T>> &x,
                                  const std::complex<T> fs2)
 {
     // Always do this in double precision to mitigate overflow
-    std::complex<double> gain{1 + 0i};
+    std::complex<double> gain{std::complex<double> (1, 0)};
     for (const auto &xi : x)
     {
         gain = gain*( static_cast<std::complex<double>> (fs2)
@@ -55,13 +55,13 @@ USignal::FilterDesign::InfiniteImpulseResponse::bilinearTransform(
         throw std::invalid_argument("Cannot have more zeros than poles");
     }
     // Bilinear transform
-    std::complex<T> fs2 = 2*samplingFrequency + 0i;
+    const std::complex<T> fs2 = std::complex<T> (2*samplingFrequency, 0);
     auto bilinearZeros = ::bilinearTransform(analogZeros, fs2);
     auto bilinearPoles = ::bilinearTransform(analogPoles, fs2);
     // Zeros at infinite get moved to Nyquist frequency
     for (size_t i = bilinearZeros.size(); i < bilinearPoles.size(); ++i)
     {
-        bilinearZeros.push_back(-1 + 0i);
+        bilinearZeros.push_back(std::complex<T> (-1, 0));
     }
     // Compensate for gain change
     auto analogNumeratorGain = ::computeGain(analogZeros, fs2);
