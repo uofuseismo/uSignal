@@ -62,7 +62,7 @@ endif()
 ##########################################################################################
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/private/version.hpp.in
-               {CMAKE_CURRENT_BINARY_DIR}/include/uSignal/version.hpp @ONLY)
+               ${CMAKE_CURRENT_BINARY_DIR}/include/uSignal/version.hpp @ONLY)
 set(UTILITIES_SRCS
     src/system.cpp
     src/vector.cpp
