@@ -53,7 +53,6 @@ void computeTransferFunction(
     USignal::Vector<std::complex<T>> *response)
 {
 #ifndef NDEBUG
-    assert(numeratorCoefficients.size() == denominatorCoefficients.size());
     assert(response != nullptr);
 #endif
     // Evaluate the numerator and denominator polynomials
@@ -63,6 +62,9 @@ void computeTransferFunction(
     auto hDenominator
         = USignal::Utilities::Math::Polynomial::evaluate(
             denominatorCoefficients, abscissa);
+#ifndef NDEBUG
+    assert(hNumerator.size() == hDenominator.size());
+#endif
     // Compute the transfer function
     if (response->size() != hNumerator.size())
     {
@@ -70,8 +72,8 @@ void computeTransferFunction(
     }
     response->resize(hNumerator.size());
 #ifndef NDEBUG
-    assert(hsNumerator.size() == response.size());
-    assert(hsDenominator.size() == response.size());
+    assert(hNumerator.size() == response->size());
+    assert(hDenominator.size() == response->size());
 #endif
     const auto hnPtr = std::assume_aligned<ALIGNMENT> (hNumerator.data());
     const auto hdPtr = std::assume_aligned<ALIGNMENT> (hDenominator.data());
@@ -90,7 +92,6 @@ void computeTransferFunction(
     USignal::Vector<std::complex<T>> *response)
 {
 #ifndef NDEBUG
-    assert(hNumerator.size() == hDenominator.size());
     assert(response != nullptr);
 #endif
     // Evaluate the numerator polynomial
@@ -104,7 +105,7 @@ void computeTransferFunction(
     }
     response->resize(hNumerator.size());
 #ifndef NDEBUG
-    assert(hsNumerator.size() == response.size());
+    assert(hNumerator.size() == response->size());
 #endif
     const auto hnPtr = std::assume_aligned<ALIGNMENT> (hNumerator.data());
     auto rPtr = std::assume_aligned<ALIGNMENT> (response->data());

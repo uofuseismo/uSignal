@@ -29,24 +29,24 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
                    double, float)
 {
     USignal::Vector<std::complex<TestType>> zerosRef(
-        std::vector<std::complex<TestType>> { 1 + 0i, 
-                                              1 + 0i, 
-                                              1 + 0i, 
-                                              1 + 0i, 
-                                             -1 + 0i, 
-                                             -1 + 0i, 
-                                             -1 + 0i, 
-                                             -1 + 0i} );
+        std::vector<std::complex<TestType>> {std::complex<TestType> ( 1 , 0), 
+                                             std::complex<TestType> ( 1 , 0), 
+                                             std::complex<TestType> ( 1 , 0), 
+                                             std::complex<TestType> ( 1 , 0), 
+                                             std::complex<TestType> (-1 , 0), 
+                                             std::complex<TestType> (-1 , 0), 
+                                             std::complex<TestType> (-1 , 0), 
+                                             std::complex<TestType> (-1 , 0)} );
     USignal::Vector<std::complex<TestType>> polesRef(
         std::vector<std::complex<TestType>> {
-            0.861419077078615-0.40475046563708234i,
-            0.7609277750082251-0.4142205574875641i,
-            0.7609277750082251+0.4142205574875641i,
-            0.861419077078615+0.40475046563708234i,
-            0.6708198383910375+0.634395173212654i,
-            0.6746102884496724+0.4961465975166494i,
-            0.6746102884496724-0.4961465975166494i,
-            0.6708198383910375-0.634395173212654i} );
+            std::complex<TestType> (0.861419077078615, -0.40475046563708234),
+            std::complex<TestType> (0.7609277750082251, -0.4142205574875641),
+            std::complex<TestType> (0.7609277750082251, +0.4142205574875641),
+            std::complex<TestType> (0.861419077078615, +0.40475046563708234),
+            std::complex<TestType> (0.6708198383910375, +0.634395173212654),
+            std::complex<TestType> (0.6746102884496724, +0.4961465975166494),
+            std::complex<TestType> (0.6746102884496724, -0.4961465975166494),
+            std::complex<TestType> (0.6708198383910375, -0.634395173212654)} );
     constexpr TestType gainRef{0.0005705645409457355};
     USignal::FilterRepresentations::ZerosPolesGain
         zpk{zerosRef, polesRef, gainRef};
@@ -110,17 +110,17 @@ TEMPLATE_TEST_CASE("CoreTest::FilterRepresentations::ZerosPolesGain",
         {
             std::vector<std::complex<TestType>>
             {
-                -0.24999999999999994+1.3919410907075054i,
-                -0.24999999999999994-1.3919410907075054i,
+                std::complex<TestType> (-0.24999999999999994,+1.3919410907075054),
+                std::complex<TestType> (-0.24999999999999994,-1.3919410907075054),
             }
         };
         USignal::Vector<std::complex<TestType>> pRef
         {
             std::vector<std::complex<TestType>>
             {
-                -1.5568705631796869+0i,
-                0.6534352815898432+0.9260942945910597i,
-                0.6534352815898432-0.9260942945910597i
+                std::complex<TestType> (-1.5568705631796869, 0),
+                std::complex<TestType> (0.6534352815898432,  0.9260942945910597),
+                std::complex<TestType> (0.6534352815898432,  -0.9260942945910597)
             }
         };
         CHECK(Catch::Approx(gainRef).margin(

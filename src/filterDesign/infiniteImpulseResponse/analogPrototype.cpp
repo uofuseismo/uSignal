@@ -62,7 +62,7 @@ USignal::FilterDesign::InfiniteImpulseResponse::
     // Ripple factor
     const double rippleTemp = std::pow(10.0, 0.1*ripple);
 #ifndef NDEBUG
-    assert(ripple > 1.0);
+    assert(rippleTemp > 1.0);
 #endif
     const double eps = std::sqrt(rippleTemp - 1.0);
     const double mu = 1.0/(static_cast<double> (nPoles))*std::asinh(1.0/eps);
