@@ -344,7 +344,7 @@ public:
         auto nSamples = static_cast<int> (x.size());
         if (nSamples < 1){return;}
         constexpr T zero{0};
-        if (y->empty() || y->size() != nSamples)
+        if (y->empty() || static_cast<int> (y->size()) != nSamples)
         {
             y->resize(nSamples, zero);
         }

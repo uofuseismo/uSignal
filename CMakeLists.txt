@@ -103,7 +103,7 @@ target_sources(libuSignal
                PUBLIC
                FILE_SET HEADERS
                BASE_DIRS
-                  ${CMAKE_CURRENT_SOURCE_DIR}
+                  include
                FILES
                   include/uSignal/version.hpp
                   include/uSignal/system/system.hpp

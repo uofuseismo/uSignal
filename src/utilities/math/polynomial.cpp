@@ -31,7 +31,7 @@ USignal::Vector<std::complex<T>> computeEigenvalues(
 {
     auto n = static_cast<lapack_int> (nIn);
     auto lda = static_cast<lapack_int> (ldaIn);
-    USignal::Vector<std::complex<T>> eigenvalues(n, 0 + 0i);
+    USignal::Vector<std::complex<T>> eigenvalues(n, std::complex<T> (0, 0));
     std::vector<double> wr(n);
     std::vector<double> wi(n);
     double vl;
@@ -184,7 +184,7 @@ USignal::Vector<std::complex<T>>
 USignal::Utilities::Math::Polynomial::expand(
     const USignal::Vector<std::complex<T>> &roots)
 {
-    constexpr std::complex<T> one{1 + 0i};
+    constexpr std::complex<T> one{std::complex<double> (1, 0)};
     USignal::Vector<std::complex<T>> result;
     auto order = static_cast<int> (roots.size());
     result.resize(order + 1);
@@ -201,7 +201,7 @@ USignal::Utilities::Math::Polynomial::expand(
         result[1] =-roots[0];
         return result;
     }
-    constexpr std::complex<T> zero{0 + 0i};
+    constexpr std::complex<T> zero{std::complex<double> (0, 0)};
     USignal::Vector<std::complex<T>> temp1(roots.size() + 1);
     USignal::Vector<std::complex<T>> temp2(roots.size() + 1);
     // Initialize

@@ -122,7 +122,7 @@ public:
                 = mImaginaryFIRFilter->getOutputReference();
             if (y->size() != yImaginaryRef.size())
             {
-                constexpr std::complex<T> zero{0 + 0i};
+                constexpr std::complex<T> zero{std::complex<T> (0, 0)};
                 y->resize(yImaginaryRef.size(), zero);
             }
             auto yPtr = std::assume_aligned<ALIGNMENT> (y->data()); 
@@ -158,7 +158,7 @@ public:
 #endif
             if (y->size() != yRealRef.size())
             {
-                constexpr std::complex<T> zero{0 + 0i};
+                constexpr std::complex<T> zero{std::complex<T> (0, 0)};
                 y->resize(yRealRef.size(), zero);
             }
             auto yPtr = std::assume_aligned<ALIGNMENT> (y->data());
