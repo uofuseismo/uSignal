@@ -192,8 +192,8 @@ public:
         auto bs = filterCoefficients.getNumeratorFilterCoefficients();
         auto as = filterCoefficients.getDenominatorFilterCoefficients();
 #ifndef NDEBUG
-        assert(bs.size() == 3*mSections);
-        assert(as.size() == 3*mSections);
+        assert(static_cast<int> (bs.size()) == 3*mSections);
+        assert(static_cast<int> (as.size()) == 3*mSections);
 #endif
         // Buffer
         int bufferSize{0};

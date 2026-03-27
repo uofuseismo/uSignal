@@ -312,7 +312,7 @@ public:
         }
         if (static_cast<int> (output->size()) != getTransformLength())
         {
-            constexpr std::complex<T> zero{0 + 2i};
+            constexpr std::complex<T> zero{std::complex<T> (0, 0)};
             output->resize(getTransformLength(), zero);
         }
         if (mDoFFT)

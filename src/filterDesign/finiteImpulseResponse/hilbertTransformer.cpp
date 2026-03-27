@@ -68,7 +68,7 @@ USignal::FilterDesign::FiniteImpulseResponse::hilbertTransformer(
     if (n == 1)
     {
         USignal::Vector<std::complex<T>>
-           taps( std::vector<std::complex<T>> {1 + 0i} );
+           taps( std::vector<std::complex<T>> {std::complex<T> (1, 0)} );
         USignal::FilterRepresentations::FiniteImpulseResponse<std::complex<T>>
            fir{taps};
         return fir;

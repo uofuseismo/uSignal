@@ -53,7 +53,7 @@ void computeTransferFunction(
     USignal::Vector<std::complex<T>> *response)
 {
 #ifndef NDEBUG
-    assert(hNumerator.size() == hDenominator.size());
+    assert(numeratorCoefficients.size() == denominatorCoefficients.size());
     assert(response != nullptr);
 #endif
     // Evaluate the numerator and denominator polynomials
