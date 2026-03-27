@@ -14,6 +14,10 @@ include(CheckCXXCompilerFlag)
 #   message("Will build Python bindings")
 #   find_package(pybind11 REQUIRED)
 #endif()
+# Boost
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 find_package(Catch2 3 REQUIRED)
 find_package(IPP COMPONENTS ippcore ipps ippvm)
 find_package(Boost COMPONENTS headers REQUIRED)
@@ -57,8 +61,8 @@ endif()
 #                                      Define Library Dependencies                       #
 ##########################################################################################
 
-configure_file(${CMAKE_SOURCE_DIR}/src/private/version.hpp.in
-               ${CMAKE_SOURCE_DIR}/include/uSignal/version.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/private/version.hpp.in
+               {CMAKE_CURRENT_BINARY_DIR}/include/uSignal/version.hpp @ONLY)
 set(UTILITIES_SRCS
     src/system.cpp
     src/vector.cpp
