@@ -4,6 +4,7 @@ enable_testing()
 
 # Some options
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+option(BUILD_TESTS "Compile unit tests" ON)
 #option(WRAP_PYTHON "Compile the Python bindings" OFF)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 include(CheckCXXCompilerFlag)
@@ -146,43 +147,43 @@ set_target_properties(libuSignal PROPERTIES
 #########################################################################################
 #                                        Unit Tests                                     #
 #########################################################################################
-
-add_executable(coreTests
-               testing/filterRepresentations/finiteImpulseResponse.cpp
-               testing/filterRepresentations/zerosPolesGain.cpp
-               testing/filterRepresentations/infiniteImpulseResponse.cpp
-               testing/filterRepresentations/secondOrderSections.cpp
-               testing/utilities/math.cpp
-               testing/filterDesign/response.cpp
-               testing/filterDesign/finiteImpulseResponse.cpp
-               testing/filterDesign/infiniteImpulseResponse.cpp
-               testing/filterImplementations/finiteImpulseResponse.cpp
-               testing/filterImplementations/infiniteImpulseResponse.cpp
-               testing/transforms/fourier.cpp
-               testing/transforms/hilbert.cpp
-               testing/utilities/demean.cpp
-               testing/utilities/waterLevelTrigger.cpp
-               testing/utilities/window.cpp
-               testing/utilities/taper.cpp
-)
-set_target_properties(coreTests PROPERTIES
-                      CXX_STANDARD 20
-                      CXX_STANDARD_REQUIRED YES 
-                      CXX_EXTENSIONS NO)
-target_link_libraries(coreTests
-                      #PUBLIC OpenMP::OpenMP_CXX
-                      PUBLIC TBB::tbb TBB::tbbmalloc
-                      PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
-target_include_directories(coreTests
-                           PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-                           PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
-add_test(NAME coreTests
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/testing
-         COMMAND coreTests)
-
-# Need to copy the answers to the test directory
-file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
-#file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
+if (PROJECT_IS_TOP_LEVEL AND ${BUILD_TESTS})
+   add_executable(coreTests
+                  testing/filterRepresentations/finiteImpulseResponse.cpp
+                  testing/filterRepresentations/zerosPolesGain.cpp
+                  testing/filterRepresentations/infiniteImpulseResponse.cpp
+                  testing/filterRepresentations/secondOrderSections.cpp
+                  testing/utilities/math.cpp
+                  testing/filterDesign/response.cpp
+                  testing/filterDesign/finiteImpulseResponse.cpp
+                  testing/filterDesign/infiniteImpulseResponse.cpp
+                  testing/filterImplementations/finiteImpulseResponse.cpp
+                  testing/filterImplementations/infiniteImpulseResponse.cpp
+                  testing/transforms/fourier.cpp
+                  testing/transforms/hilbert.cpp
+                  testing/utilities/demean.cpp
+                  testing/utilities/waterLevelTrigger.cpp
+                  testing/utilities/window.cpp
+                  testing/utilities/taper.cpp
+   )
+   set_target_properties(coreTests PROPERTIES
+                         CXX_STANDARD 20
+                         CXX_STANDARD_REQUIRED YES 
+                         CXX_EXTENSIONS NO)
+   target_link_libraries(coreTests
+                         #PUBLIC OpenMP::OpenMP_CXX
+                         PUBLIC TBB::tbb TBB::tbbmalloc
+                         PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
+   target_include_directories(coreTests
+                              PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+                              PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
+   add_test(NAME coreTests
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/testing
+            COMMAND coreTests)
+   # Need to copy the answers to the test directory
+   file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
+   #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
+endif()
 
 #add_executable(digitalApproximation modules/digitalApproximation.cpp)
 #set_target_properties(digitalApproximation PROPERTIES
@@ -205,16 +206,16 @@ write_basic_package_version_file(
     COMPATIBILITY AnyNewerVersion
 )
 install(TARGETS libuSignal
-        EXPORT ${PROJECT_NAME}-targets
+        EXPORT ${PROJECT_NAME}Targets
         FILE_SET HEADERS 
         ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
         COMPONENT libraries)
 #install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/uSignal
 #        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-export(EXPORT ${PROJECT_NAME}-targets
+export(EXPORT ${PROJECT_NAME}Targets
        NAMESPACE uSignal::
        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
-install(EXPORT ${PROJECT_NAME}-targets
+install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
