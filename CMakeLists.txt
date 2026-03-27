@@ -133,8 +133,8 @@ if (${MKL_FOUND})
    target_compile_definitions(libuSignal PRIVATE WITH_MKL)
 endif()
 target_include_directories(libuSignal
-                           PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-                           PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+                           PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            PUBLIC  $<INSTALL_INTERFACE:/install>)
 target_link_libraries(libuSignal
                       #PUBLIC OpenMP::OpenMP_CXX
@@ -179,10 +179,10 @@ if (PROJECT_IS_TOP_LEVEL AND ${BUILD_TESTS})
                          PUBLIC TBB::tbb TBB::tbbmalloc
                          PRIVATE uSignal::libuSignal Threads::Threads Catch2::Catch2 Catch2::Catch2WithMain)
    target_include_directories(coreTests
-                              PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-                              PRIVATE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>)
+                              PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                              PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
    add_test(NAME coreTests
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/testing
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testing
             COMMAND coreTests)
    # Need to copy the answers to the test directory
    file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
