@@ -36,41 +36,41 @@ TEMPLATE_TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::BilinearTra
                    double, float)
 {
     USignal::Vector<std::complex<TestType>> analogZeros(
-        std::vector<std::complex<TestType>> {0 + 0i,
-                                             0 + 0i,
-                                             0 + 0i,
-                                             0 + 0i} );
+        std::vector<std::complex<TestType>> {std::complex<TestType> (0 , 0),
+                                             std::complex<TestType> (0 , 0),
+                                             std::complex<TestType> (0 , 0),
+                                             std::complex<TestType> (0 , 0)} );
     USignal::Vector<std::complex<TestType>> analogPoles(
          std::vector<std::complex<TestType>> {
-            -5.188311655529189 - 44.616532466296775i,
-            -15.243050879954183 - 50.63131935118821i,
-            -15.243050879954183 + 50.63131935118821i,
-            -5.188311655529189 + 44.616532466296775i,
-            -9.238513861695127 + 79.44597029196994i,
-            -19.586386945718992 + 65.05814486841253i,
-            -19.586386945718992 - 65.05814486841253i,
-            -9.238513861695127-79.44597029196994i} );
+            std::complex<TestType> (-5.188311655529189,  - 44.616532466296775),
+            std::complex<TestType> (-15.243050879954183, - 50.63131935118821),
+            std::complex<TestType> (-15.243050879954183, + 50.63131935118821),
+            std::complex<TestType> (-5.188311655529189, + 44.616532466296775),
+            std::complex<TestType> (-9.238513861695127, + 79.44597029196994),
+            std::complex<TestType> (-19.586386945718992, + 65.05814486841253),
+            std::complex<TestType> (-19.586386945718992, - 65.05814486841253),
+            std::complex<TestType> (-9.238513861695127, -79.44597029196994)} );
     constexpr TestType analogGain{2019874.9116810758};
 
     USignal::Vector<std::complex<TestType>> digitalZerosRef(
-        std::vector<std::complex<TestType>> { 1 + 0i,
-                                              1 + 0i,
-                                              1 + 0i,
-                                              1 + 0i,
-                                             -1 + 0i,
-                                             -1 + 0i,
-                                             -1 + 0i,
-                                             -1 + 0i} );
+        std::vector<std::complex<TestType>> { std::complex<TestType> ( 1, 0),
+                                              std::complex<TestType> ( 1, 0),
+                                              std::complex<TestType> ( 1, 0),
+                                              std::complex<TestType> ( 1, 0),
+                                              std::complex<TestType> (-1, 0),
+                                              std::complex<TestType> (-1, 0),
+                                              std::complex<TestType> (-1, 0),
+                                              std::complex<TestType> (-1, 0)} );
     USignal::Vector<std::complex<TestType>> digitalPolesRef(
         std::vector<std::complex<TestType>> {
-            0.861419077078615-0.40475046563708234i,
-            0.7609277750082251-0.4142205574875641i,
-            0.7609277750082251+0.4142205574875641i,
-            0.861419077078615+0.40475046563708234i,
-            0.6708198383910375+0.634395173212654i,
-            0.6746102884496724+0.4961465975166494i,
-            0.6746102884496724-0.4961465975166494i,
-            0.6708198383910375-0.634395173212654i} );
+            std::complex<TestType> (0.861419077078615,-0.40475046563708234),
+            std::complex<TestType> (0.7609277750082251,-0.4142205574875641),
+            std::complex<TestType> (0.7609277750082251,+0.4142205574875641),
+            std::complex<TestType> (0.861419077078615,+0.40475046563708234),
+            std::complex<TestType> (0.6708198383910375,+0.634395173212654),
+            std::complex<TestType> (0.6746102884496724,+0.4961465975166494),
+            std::complex<TestType> (0.6746102884496724,-0.4961465975166494),
+            std::complex<TestType> (0.6708198383910375,-0.634395173212654)} );
     constexpr TestType digitalGainRef{0.0005705645409457355};
 
     constexpr TestType samplingFrequency{100};
@@ -115,7 +115,7 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::but
                   std::numeric_limits<double>::epsilon()) == gain);
         REQUIRE(zpk.getZeros().size() == 0);
         REQUIRE(zpk.getPoles().size() == 1);
-        constexpr std::complex<double> pole{-1 + 0i};
+        constexpr std::complex<double> pole{ std::complex<double> (-1, 0) };
         REQUIRE(std::abs(pole - zpk.getPoles().at(0)) <
                 std::numeric_limits<double>::epsilon());
     }
@@ -127,11 +127,11 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::but
         {
             std::vector<std::complex<double>>
             {
-               -0.3090169943749474  + 0.95105651629515353i,
-               -0.80901699437494745 + 0.58778525229247303i,
-               -1 + 0i,
-               -0.80901699437494745 + -0.58778525229247303i,
-               -0.30901699437494751 + -0.95105651629515353i
+               std::complex<double> (-0.3090169943749474,+0.95105651629515353),
+               std::complex<double> (-0.80901699437494745,+0.58778525229247303),
+               std::complex<double> (-1, 0),
+               std::complex<double> (-0.80901699437494745,-0.58778525229247303),
+               std::complex<double> (-0.30901699437494751,-0.95105651629515353)
             }
         };
         auto zpk = UAnalogPrototype::butterworth(order);
@@ -167,7 +167,7 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         auto zpk = UAnalogPrototype::chebyshevTypeI(order, ripple);
         REQUIRE(zpk.getZeros().size() == 0);
         REQUIRE(zpk.getPoles().size() == 1);
-        constexpr std::complex<double> pole{-1.2313003041963828 + 0i};
+        constexpr std::complex<double> pole{std::complex<double> (-1.2313003041963828, 0)};
         constexpr double gainRef{1.2313003041963828};
         REQUIRE(std::abs(zpk.getGain() - gainRef) <
                 std::numeric_limits<double>::epsilon()*100);
@@ -183,12 +183,12 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         {
             std::vector<std::complex<double>>
             {
-                -0.062314231644038744 + 0.9935274525619241i,
-                -0.17024564688613014  + 0.72731257398980598i,
-                -0.23255987853016891  + 0.26621487857211812i,
-                -0.23255987853016891  +-0.26621487857211795i,
-                -0.17024564688613017  +-0.72731257398980587i,
-                -0.062314231644038813 +-0.99352745256192398i
+                std::complex<double> (-0.062314231644038744,+0.9935274525619241),
+                std::complex<double> (-0.17024564688613014, +0.72731257398980598),
+                std::complex<double> (-0.23255987853016891, +0.26621487857211812),
+                std::complex<double> (-0.23255987853016891, -0.26621487857211795),
+                std::complex<double> (-0.17024564688613017, -0.72731257398980587),
+                std::complex<double> (-0.062314231644038813,-0.99352745256192398)
             }
         };
         constexpr double gainRef{0.061620501119488615};
@@ -225,7 +225,7 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         auto zpk = UAnalogPrototype::chebyshevTypeII(order, ripple);
         REQUIRE(zpk.getZeros().size() == 0);
         REQUIRE(zpk.getPoles().size() == 1);
-        constexpr std::complex<double> pole{-1.862583192806328 + 0i};
+        constexpr std::complex<double> pole{std::complex<double> (-1.862583192806328, 0)};
         constexpr double gainRef{1.862583192806328};
         REQUIRE(std::abs(zpk.getGain() - gainRef) <
                 std::numeric_limits<double>::epsilon()*100);
@@ -246,17 +246,17 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         {
             std::vector<std::complex<double>>
             {
-                -1.1547005383792517i,
-                 1.1547005383792517i,
+                std::complex<double> (0, -1.1547005383792517),
+                std::complex<double> (0,  1.1547005383792517),
             }
         };
         USignal::Vector<std::complex<double>> polesRef
         {
             std::vector<std::complex<double>>
             {
-                -0.11517150279344834-1.1245944747171477i,
-                -5.548148529033251+0i,
-                -0.11517150279344834+1.1245944747171477i
+                std::complex<double> (-0.11517150279344834,-1.1245944747171477),
+                std::complex<double> (-5.548148529033251,0),
+                std::complex<double> (-0.11517150279344834,+1.1245944747171477)
             }
         };
         auto zeros = zpk.getZeros();
@@ -302,24 +302,24 @@ TEST_CASE("CoreTest::FilterDesign::InfiniteImpulseResponse::AnalogPrototype::che
         {
             std::vector<std::complex<double>>
             { 
-                0 - 1.035276180410083i,
-                0 - 1.4142135623730951i,
-                0 - 3.8637033051562737i,
-                0 + 3.8637033051562737i,
-                0 + 1.4142135623730951i,
-                0 + 1.035276180410083i
+                std::complex<double> (0,-1.035276180410083),
+                std::complex<double> (0,-1.4142135623730951),
+                std::complex<double> (0,-3.8637033051562737),
+                std::complex<double> (0,+3.8637033051562737),
+                std::complex<double> (0,+1.4142135623730951),
+                std::complex<double> (0,+1.035276180410083)
             }
         };
         USignal::Vector<std::complex<double>> polesRef
         {
             std::vector<std::complex<double>>
             { 
-                -0.024686186266327684 -1.0305393933278832i,
-                -0.12492582633346083 -1.3973824335027194i,
-                -1.1553327165440157 -3.462761441343769i,
-                -1.1553327165440157 +3.462761441343769i,
-                -0.12492582633346083 +1.3973824335027194i,
-                -0.024686186266327684 +1.0305393933278832i
+                std::complex<double> (-0.024686186266327684,-1.0305393933278832),
+                std::complex<double> (-0.12492582633346083, -1.3973824335027194),
+                std::complex<double> (-1.1553327165440157, -3.462761441343769),
+                std::complex<double> (-1.1553327165440157, +3.462761441343769),
+                std::complex<double> (-0.12492582633346083, +1.3973824335027194),
+                std::complex<double> (-0.024686186266327684,+1.0305393933278832)
             }
         };
         auto zeros = zpk.getZeros();
@@ -358,9 +358,9 @@ TEST_CASE("Convert lowpass to lowpass")
     {   
         std::vector<std::complex<double>>
         {
-            -1.876286105033209+11.35766707809726i,
-            -3.752572210066417-0i,
-            -1.876286105033209-11.35766707809726i
+            std::complex<double> (-1.876286105033209,+11.35766707809726),
+            std::complex<double> (-3.752572210066417, 0),
+            std::complex<double> (-1.876286105033209,-11.35766707809726)
         }
     };
     constexpr double gainReference{497.279802960698};
@@ -391,15 +391,17 @@ TEST_CASE("Convert lowpass to highpass")
     // [z1, p1, k1] = signal.lp2hp_zpk(z, p, k, 2*2*pi)
     USignal::Vector<std::complex<double>> zerosRef
     {
-        std::vector<std::complex<double>> {0 + 0i, 0 + 0i, 0 + 0i}
+        std::vector<std::complex<double>> {std::complex<double> (0 , 0),
+                                           std::complex<double> (0 , 0),
+                                           std::complex<double> (0 , 0)}
     };
     USignal::Vector<std::complex<double>> polesRef
     {   
         std::vector<std::complex<double>>
         {
-            -2.235872465862575-13.534340540192852i,
-            -42.081447491888454-0i,
-            -2.235872465862575+13.534340540192852i
+            std::complex<double> (-2.235872465862575,-13.534340540192852),
+            std::complex<double> (-42.081447491888454,0),
+            std::complex<double> (-2.235872465862575,+13.534340540192852)
         }
     };  
     constexpr double gainReference{1};
@@ -436,20 +438,23 @@ TEST_CASE("Convert lowpass to bandpass")
             zpkLowpassAnalogPrototype, cutoffFrequenciesRadSeconds);
     USignal::Vector<std::complex<double>> zerosRef
     {   
-        std::vector<std::complex<double>> {0 + 0i, 0 + 0i, 0 + 0i, 0 + 0i} 
+        std::vector<std::complex<double>> {std::complex<double> (0 , 0),
+                                           std::complex<double> (0 , 0),
+                                           std::complex<double> (0 , 0),
+                                           std::complex<double> (0 , 0)} 
     };
     USignal::Vector<std::complex<double>> polesRef
     {
         std::vector<std::complex<double>>
         {
-            -2.747844608990089-8.59936563405789i,
-            -9.43813420914492-5.793234681905291i,
-            -9.43813420914492+5.793234681905291i,
-            -2.747844608990089+8.59936563405789i,
-           -21.296864586383766+66.6484286768465i,
-           -48.6109288336437+29.837943877279145i,
-           -48.6109288336437-29.837943877279145i,
-           -21.296864586383766-66.6484286768465i,
+            std::complex<double> (-2.747844608990089,-8.59936563405789),
+            std::complex<double> (-9.43813420914492,-5.793234681905291),
+            std::complex<double> (-9.43813420914492,+5.793234681905291),
+            std::complex<double> (-2.747844608990089,+8.59936563405789),
+            std::complex<double> (-21.296864586383766,+66.6484286768465),
+            std::complex<double> (-48.6109288336437,+29.837943877279145),
+            std::complex<double> (-48.6109288336437,-29.837943877279145),
+            std::complex<double> (-21.296864586383766,-66.6484286768465),
         }
     };
     constexpr double gainReference{15585454.565440388}; 
@@ -488,28 +493,28 @@ TEST_CASE("Convert lowpass to bandstop")
     {
         std::vector<std::complex<double>> 
         {
-            0 + 25.132741228718345i,
-            0 + 25.132741228718345i,
-            0 + 25.132741228718345i,
-            0 + 25.132741228718345i,
-            0 - 25.132741228718345i,     
-            0 - 25.132741228718345i,     
-            0 - 25.132741228718345i,     
-            0 - 25.132741228718345i
+            std::complex<double> (0 , 25.132741228718345),
+            std::complex<double> (0 , 25.132741228718345),
+            std::complex<double> (0 , 25.132741228718345),
+            std::complex<double> (0 , 25.132741228718345),
+            std::complex<double> (0 ,-25.132741228718345),
+            std::complex<double> (0 ,-25.132741228718345),
+            std::complex<double> (0 ,-25.132741228718345),
+            std::complex<double> (0 ,-25.132741228718345)
         }
     };
     USignal::Vector<std::complex<double>> polesRef
     {   
         std::vector<std::complex<double>>
         {   
-            -2.747844608990089+8.59936563405789i,
-            -9.43813420914492+5.79323468190529i,
-            -9.43813420914492-5.79323468190529i,
-            -2.747844608990089-8.59936563405789i,
-            -21.296864586383766-66.6484286768465i,
-            -48.6109288336437-29.837943877279145i,
-            -48.6109288336437+29.837943877279145i,
-            -21.296864586383766+66.6484286768465i
+            std::complex<double> (-2.747844608990089,+8.59936563405789),
+            std::complex<double> (-9.43813420914492,+5.79323468190529),
+            std::complex<double> (-9.43813420914492,-5.79323468190529),
+            std::complex<double> (-2.747844608990089,-8.59936563405789),
+            std::complex<double> (-21.296864586383766,-66.6484286768465),
+            std::complex<double> (-48.6109288336437,-29.837943877279145),
+            std::complex<double> (-48.6109288336437,+29.837943877279145),
+            std::complex<double> (-21.296864586383766,+66.6484286768465)
         }
     };
     constexpr double gainReference{1};

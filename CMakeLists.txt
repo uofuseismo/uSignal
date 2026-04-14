@@ -183,7 +183,7 @@ if (PROJECT_IS_TOP_LEVEL AND ${BUILD_TESTS})
                               PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>)
    add_test(NAME coreTests
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testing
-            COMMAND coreTests)
+            COMMAND $<TARGET_FILE:coreTests>)
    # Need to copy the answers to the test directory
    file(COPY ${CMAKE_SOURCE_DIR}/testing/data DESTINATION .)
    #file(COPY ${CMAKE_SOURCE_DIR}/python/benchmarks.py DESTINATION .)
@@ -213,6 +213,7 @@ install(TARGETS libuSignal
         EXPORT ${PROJECT_NAME}Targets
         FILE_SET HEADERS 
         ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
         COMPONENT libraries)
 #install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/uSignal
 #        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
