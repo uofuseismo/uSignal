@@ -2,6 +2,9 @@
 #include <cmath>
 #include <complex>
 #include <string>
+#ifndef NDEBUG
+#include <cassert>
+#endif
 #include "uSignal/filterDesign/infiniteImpulseResponse/analogPrototype.hpp"
 #include "uSignal/filterRepresentations/zerosPolesGain.hpp"
 #include "uSignal/vector.hpp"

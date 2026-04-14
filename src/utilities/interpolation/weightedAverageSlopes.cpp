@@ -4,6 +4,9 @@
 #include <array>
 #include <string>
 #include <algorithm>
+#ifndef NDEBUG
+#include <cassert>
+#endif
 #include <mkl.h>
 /*
 #include "rtseis/enums.hpp"

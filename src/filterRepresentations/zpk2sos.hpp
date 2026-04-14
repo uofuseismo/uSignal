@@ -6,6 +6,10 @@
 #include <limits>
 #include <cmath>
 #include <complex>
+#ifndef NDEBUG
+#include <cassert>
+#endif
+
 namespace
 {
 
