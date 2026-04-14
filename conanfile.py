@@ -10,12 +10,9 @@ class uSignalConan(ConanFile):
    url = "https://github.com/uofuseismo/uSignal"
    #topics = ("uSignal")
    settings = "os", "compiler", "build_type", "arch"
-   options = {"build_tests" : [True, False],
-              "build_training" : [True, False],
-              "with_conan" : [True, False]}
+   options = {"build_tests" : [True, False],}
    default_options = {"hwloc/*:shared": "True",
                       "build_tests" : "True",
-                      "with_conan" : "True",
                      }
    export_sources = "CMakeLists.txt", "LICENSE", "README.md", "cmake/*", "src/*", "testing/*"
    generators = "CMakeDeps", "CMakeToolchain"
