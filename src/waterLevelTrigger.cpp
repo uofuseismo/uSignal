@@ -156,7 +156,7 @@ void WaterLevelTrigger<T>::apply()
 template<class T>
 void WaterLevelTrigger<T>::resetInitialConditions()
 {
-    if (isInitialized()){throw std::runtime_error("Trigger not initialized");}
+    if (!isInitialized()){throw std::runtime_error("Trigger not initialized");}
     pImpl->mDelayLine = std::numeric_limits<T>::lowest();
     pImpl->mArmed = false;
 }
